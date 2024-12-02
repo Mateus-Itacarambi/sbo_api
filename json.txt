@@ -1,0 +1,15 @@
+***ESTUDANTE***
+{
+"usuario": {
+	"nome": "Rodrigo Ferreira",
+	"dataNascimento": "17-09-2001",
+	"genero": "Masculino",
+	"email": "rodrigo.ferreira@voll.med",
+	"senha": "123456",
+	"dataCadastro": "17-09-2024"
+},
+"cursoId": "rua 1",
+"semestre": "bairro",
+"matricula": "12345678"
+}
+
