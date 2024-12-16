@@ -1,6 +1,7 @@
 package ifb.sbo.api.domain.curso;
 
 import ifb.sbo.api.domain.estudante.Estudante;
+import ifb.sbo.api.domain.professor.Professor;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -28,6 +29,8 @@ public class Curso {
     private Boolean ativo;
     @OneToMany(mappedBy = "curso", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Estudante> estudantes = new ArrayList<>();
+    @ManyToMany(mappedBy = "cursos", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Professor> professores = new ArrayList<>();
 
     public Curso(DadosCadastroCurso dados) {
         this.nome = dados.nome();

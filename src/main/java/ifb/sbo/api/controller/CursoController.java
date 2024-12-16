@@ -54,7 +54,6 @@ public class CursoController {
     @GetMapping("/{id}")
     public ResponseEntity detalharCurso(@PathVariable Long id) {
         var curso = repository.getReferenceById(id);
-//        var curso = repository.findById(id).get();
         return ResponseEntity.ok(new DadosDetalhamentoCurso(curso));
     }
 

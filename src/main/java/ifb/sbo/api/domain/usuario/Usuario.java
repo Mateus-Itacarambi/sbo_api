@@ -27,6 +27,7 @@ public abstract class Usuario {
     protected String senha;
     @Column(name = "data_cadastro")
     private LocalDate dataCadastro;
+    protected Boolean ativo;
 
     public Usuario(String nome, LocalDate dataNascimento, String genero, String email, String senha) {
         this.nome = nome;
@@ -35,5 +36,6 @@ public abstract class Usuario {
         this.email = email;
         this.senha = senha;
         this.dataCadastro = LocalDate.now();
+        this.ativo = true;
     }
 }

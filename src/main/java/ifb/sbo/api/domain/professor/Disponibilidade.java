@@ -1,5 +1,15 @@
 package ifb.sbo.api.domain.professor;
 
+import lombok.Getter;
+
+@Getter
 public enum Disponibilidade {
-    DISPONIVEL, INDISPONIVEL
+    DISPONIVEL("Disponível"),
+    INDISPONIVEL("Indisponível");
+
+    private String descricao;
+
+    Disponibilidade(String descricao) {
+        this.descricao = descricao;
+    }
 }

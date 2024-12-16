@@ -18,7 +18,6 @@ import lombok.NoArgsConstructor;
 public class Estudante extends Usuario {
     private String matricula;
     private Integer semestre;
-    private Boolean ativo;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_curso", nullable = false)
     private Curso curso;
@@ -28,7 +27,6 @@ public class Estudante extends Usuario {
         this.matricula = dados.matricula();
         this.semestre = dados.semestre();
         this.curso = curso;
-        this.ativo = true;
     }
 
     public void atualizarInformacoes(DadosAtualizaEstudante dados) {
@@ -62,6 +60,6 @@ public class Estudante extends Usuario {
     }
 
     public void excluir() {
-        this.ativo = false;
+        super.ativo = false;
     }
 }

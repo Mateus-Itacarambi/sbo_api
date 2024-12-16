@@ -1,10 +1,13 @@
-package ifb.sbo.api.domain.estudante;
+package ifb.sbo.api.domain.professor;
 
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Past;
 
 import java.time.LocalDate;
 
-public record DadosCadastroEstudante (
+public record DadosCadastroProfessor(
         @NotBlank
         String nome,
         @NotNull
@@ -18,10 +21,4 @@ public record DadosCadastroEstudante (
         @NotBlank
         String senha,
         @NotBlank
-        String matricula,
-        @NotNull
-        @Min(1)
-        Integer semestre,
-        @NotNull
-        @Min(1)
-        Long idCurso) {}
+        String idLattes) {}
