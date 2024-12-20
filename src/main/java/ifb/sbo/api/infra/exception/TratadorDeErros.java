@@ -1,6 +1,7 @@
-package ifb.sbo.api.infra;
+package ifb.sbo.api.infra.exception;
 
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -18,6 +19,11 @@ public class TratadorDeErros {
     public ResponseEntity TratarErro400(MethodArgumentNotValidException ex) {
         var erros = ex.getFieldErrors();
         return ResponseEntity.badRequest().body(erros.stream().map(DadosErroValidacao::new).toList());
+    }
+
+    @ExceptionHandler(ConflitoException.class)
+    public ResponseEntity<String> TratarErro409(ConflitoException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
     }
 
     private record DadosErroValidacao (String campo, String mensagem) {

@@ -1,15 +1,15 @@
 package ifb.sbo.api.controller;
 
 import ifb.sbo.api.domain.area_interesse.*;
-import ifb.sbo.api.domain.curso.DadosAtualizaCurso;
-import ifb.sbo.api.domain.curso.DadosDetalhamentoCurso;
-import ifb.sbo.api.domain.curso.DadosListagemCurso;
+import ifb.sbo.api.domain.professor.ProfessorRepository;
+import ifb.sbo.api.domain.professor.ProfessorService;
 import jakarta.validation.Valid;
 import jakarta.validation.ValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -20,6 +20,10 @@ import org.springframework.web.util.UriComponentsBuilder;
 public class AreaInteresseController {
     @Autowired
     private AreaInteresseRepository repository;
+    @Autowired
+    private ProfessorRepository professorRepository;
+    @Autowired
+    private ProfessorService professorService;
 
     @PostMapping
     public ResponseEntity cadastrar(@RequestBody @Valid DadosCadastroAreaInteresse dados, UriComponentsBuilder uriBuilder) {
@@ -30,7 +34,7 @@ public class AreaInteresseController {
         var areaInteresse = new AreaInteresse(dados);
         repository.save(areaInteresse);
 
-        var uri = uriBuilder.path("/cursos/{id}").buildAndExpand(areaInteresse.getId()).toUri();
+        var uri = uriBuilder.path("/areasInteresse/{id}").buildAndExpand(areaInteresse.getId()).toUri();
 
         return ResponseEntity.created(uri).body(new DadosDetalhamentoAreaInteresse(areaInteresse));
     }
@@ -61,27 +65,5 @@ public class AreaInteresseController {
     public ResponseEntity detalhar(@PathVariable Long id) {
         var areaInteresse = repository.getReferenceById(id);
         return ResponseEntity.ok(new DadosDetalhamentoAreaInteresse(areaInteresse));
-    }
-
-    @PostMapping("/professores/{professorId}/tags")
-    public ResponseEntity<AreaInteresse> addAreaInteresse(@PathVariable(value = "professorId") Long professorId, @RequestBody AreaInteresse tagRequest) {
-        AreaInteresse areaInteresse = professorRepository.findById(professorId).map(professor -> {
-            long tagId = tagRequest.getId();
-
-            // tag is existed
-            if (tagId != 0L) {
-                Tag _tag = tagRepository.findById(tagId)
-                        .orElseThrow(() -> new ResourceNotFoundException("Not found Tag with id = " + tagId));
-                tutorial.addTag(_tag);
-                tutorialRepository.save(tutorial);
-                return _tag;
-            }
-
-            // add and create new Tag
-            tutorial.addTag(tagRequest);
-            return tagRepository.save(tagRequest);
-        }).orElseThrow(() -> new ResourceNotFoundException("Not found Tutorial with id = " + tutorialId));
-
-        return new ResponseEntity<>(tag, HttpStatus.CREATED);
     }
 }

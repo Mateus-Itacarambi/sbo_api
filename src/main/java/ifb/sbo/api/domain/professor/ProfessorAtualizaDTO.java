@@ -1,10 +1,10 @@
 package ifb.sbo.api.domain.professor;
 
 import jakarta.validation.constraints.NotNull;
-
 import java.time.LocalDate;
 
-public record DadosAtualizaProfessor(
+
+public record ProfessorAtualizaDTO(
         @NotNull
         Long id,
         String nome,
@@ -13,3 +13,4 @@ public record DadosAtualizaProfessor(
         String email,
         String senha,
         String idLattes) {}
+
