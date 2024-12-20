@@ -4,7 +4,7 @@ import jakarta.validation.constraints.*;
 
 import java.time.LocalDate;
 
-public record DadosCadastroEstudante (
+public record EstudanteCadastroDTO(
         @NotBlank
         String nome,
         @NotNull

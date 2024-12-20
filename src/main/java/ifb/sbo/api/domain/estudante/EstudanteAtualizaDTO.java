@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDate;
 
-public record DadosAtualizaEstudante(
+public record EstudanteAtualizaDTO(
         @NotNull
         Long id,
         String nome,

@@ -3,7 +3,6 @@ package ifb.sbo.api.domain.estudante;
 import ifb.sbo.api.domain.usuario.Usuario;
 import ifb.sbo.api.domain.curso.Curso;
 import jakarta.persistence.*;
-import jakarta.validation.ValidationException;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,14 +21,14 @@ public class Estudante extends Usuario {
     @JoinColumn(name = "id_curso", nullable = false)
     private Curso curso;
 
-    public Estudante(DadosCadastroEstudante dados, Curso curso) {
+    public Estudante(EstudanteCadastroDTO dados, Curso curso) {
         super(dados.nome(), dados.dataNascimento(), dados.genero(), dados.email(), dados.senha());
         this.matricula = dados.matricula();
         this.semestre = dados.semestre();
         this.curso = curso;
     }
 
-    public void atualizarInformacoes(DadosAtualizaEstudante dados) {
+    public void atualizarInformacoes(EstudanteAtualizaDTO dados) {
         if (dados.nome() != null) {
             super.nome = dados.nome();
         }

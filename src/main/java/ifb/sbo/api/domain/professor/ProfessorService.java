@@ -87,7 +87,7 @@ public class ProfessorService {
     }
 
     private AreaInteresse buscarAreaInteresse(Long areaInteresseId) {
-        return areaInteresseRepository.findById(areaInteresseId)
+        return areaInteresseRepository.findByIdAndAtivoTrue(areaInteresseId)
                 .orElseThrow(() -> new EntityNotFoundException("Área de interesse não encontrada."));
     }
 

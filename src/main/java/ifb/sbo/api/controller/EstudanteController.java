@@ -18,27 +18,27 @@ public class EstudanteController {
     private EstudanteRepository repository;
 
     @Autowired
-    private CadastroEstudante cadastroEstudante;
+    private EstudanteService estudanteService;
 
     @PostMapping
-    public ResponseEntity cadastrar(@RequestBody @Valid DadosCadastroEstudante dados, UriComponentsBuilder uriBuilder) {
-        var estudante = cadastroEstudante.cadastrar(dados);
+    public ResponseEntity cadastrar(@RequestBody @Valid EstudanteCadastroDTO dados, UriComponentsBuilder uriBuilder) {
+        var estudante = estudanteService.cadastrar(dados);
         var uri = uriBuilder.path("/estudantes/{id}").buildAndExpand(estudante.id()).toUri();
         return ResponseEntity.created(uri).body(estudante);
     }
 
     @GetMapping
-    public ResponseEntity<Page<DadosListagemEstudante>> listar(@PageableDefault(size = 20, sort = {"nome"}) Pageable paginacao) {
-        var page = repository.findAllByAtivoTrue(paginacao).map(DadosListagemEstudante::new);
+    public ResponseEntity<Page<EstudanteListagemDTO>> listar(@PageableDefault(size = 20, sort = {"nome"}) Pageable paginacao) {
+        var page = repository.findAllByAtivoTrue(paginacao).map(EstudanteListagemDTO::new);
         return ResponseEntity.ok(page);
     }
 
     @PutMapping
     @Transactional
-    public ResponseEntity atualizar(@RequestBody @Valid DadosAtualizaEstudante dados) {
+    public ResponseEntity atualizar(@RequestBody @Valid EstudanteAtualizaDTO dados) {
         var estudante = repository.getReferenceById(dados.id());
         estudante.atualizarInformacoes(dados);
-        return ResponseEntity.ok(new DadosDetalhamentoEstudante(estudante));
+        return ResponseEntity.ok(new EstudanteListagemDTO(estudante));
     }
 
     @DeleteMapping("/{id}")
@@ -52,6 +52,6 @@ public class EstudanteController {
     @GetMapping("/{id}")
     public ResponseEntity detalhar(@PathVariable Long id) {
         var estudante = repository.getReferenceById(id);
-        return ResponseEntity.ok(new DadosDetalhamentoEstudante(estudante));
+        return ResponseEntity.ok(new EstudanteListagemDTO(estudante));
     }
 }

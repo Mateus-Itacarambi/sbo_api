@@ -8,4 +8,8 @@ import java.util.Optional;
 
 public interface EstudanteRepository extends JpaRepository<Estudante, Long> {
     Page<Estudante> findAllByAtivoTrue(Pageable paginacao);
+
+    int countByEmail(String email);
+
+    int countByMatricula(String matricula);
 }
