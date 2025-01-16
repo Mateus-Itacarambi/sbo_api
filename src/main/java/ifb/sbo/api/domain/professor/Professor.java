@@ -2,6 +2,8 @@ package ifb.sbo.api.domain.professor;
 
 import ifb.sbo.api.domain.area_interesse.AreaInteresse;
 import ifb.sbo.api.domain.curso.Curso;
+import ifb.sbo.api.domain.formacao.Formacao;
+import ifb.sbo.api.domain.tema.Tema;
 import ifb.sbo.api.domain.usuario.Usuario;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -41,6 +43,10 @@ public class Professor extends Usuario {
             inverseJoinColumns = @JoinColumn(name = "id_area_interesse")
     )
     private List<AreaInteresse> areasInteresse = new ArrayList<>();
+    @OneToMany(mappedBy = "professor", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Formacao> formacoes = new ArrayList<>();
+    @OneToMany(mappedBy = "professor", cascade = CascadeType.ALL)
+    private List<Tema> temas = new ArrayList<>();
 
     public Professor(ProfessorCadastroDTO dados) {
         super(dados.nome(), dados.dataNascimento(), dados.genero(), dados.email(), dados.senha());
@@ -86,6 +92,13 @@ public class Professor extends Usuario {
         return getCursos()
                 .stream()
                 .map(Curso::getNome)
+                .toList();
+    }
+
+    public List<String> getFormacoesString() {
+        return getFormacoes()
+                .stream()
+                .map(Formacao::getCurso)
                 .toList();
     }
 

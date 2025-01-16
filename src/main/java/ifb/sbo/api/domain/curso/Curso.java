@@ -32,14 +32,14 @@ public class Curso {
     @ManyToMany(mappedBy = "cursos", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Professor> professores = new ArrayList<>();
 
-    public Curso(DadosCadastroCurso dados) {
+    public Curso(CursoCadastroDTO dados) {
         this.nome = dados.nome();
         this.sigla = dados.sigla();
         this.descricao = dados.descricao();
         this.ativo = true;
     }
 
-    public void atualizarInformacoes(DadosAtualizaCurso dados) {
+    public void atualizarInformacoes(CursoAtualizaDTO dados) {
         if (dados.nome() != null) {
             this.nome = dados.nome();
         }

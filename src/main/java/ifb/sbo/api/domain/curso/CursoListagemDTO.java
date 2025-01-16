@@ -1,12 +1,13 @@
 package ifb.sbo.api.domain.curso;
 
-public record DadosDetalhamentoCurso(
+public record CursoListagemDTO(
         Long id,
         String nome,
         String sigla,
         String descricao) {
 
-    public DadosDetalhamentoCurso (Curso curso){
+    public CursoListagemDTO(Curso curso) {
         this(curso.getId(), curso.getNome(), curso.getSigla(), curso.getDescricao());
     }
 }
+

@@ -2,7 +2,7 @@ package ifb.sbo.api.domain.curso;
 
 import jakarta.validation.constraints.NotBlank;
 
-public record DadosCadastroCurso(
+public record CursoCadastroDTO(
         @NotBlank
         String nome,
         @NotBlank

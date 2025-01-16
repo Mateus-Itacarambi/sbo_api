@@ -1,16 +1,19 @@
 package ifb.sbo.api.domain.estudante;
 
+import ifb.sbo.api.domain.tema.Tema;
 import ifb.sbo.api.domain.usuario.Usuario;
 import ifb.sbo.api.domain.curso.Curso;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 
 @Table(name = "estudante")
 @Entity(name = "Estudante")
 @Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @PrimaryKeyJoinColumn(name = "id_usuario")
@@ -20,6 +23,9 @@ public class Estudante extends Usuario {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_curso", nullable = false)
     private Curso curso;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_tema")
+    private Tema tema;
 
     public Estudante(EstudanteCadastroDTO dados, Curso curso) {
         super(dados.nome(), dados.dataNascimento(), dados.genero(), dados.email(), dados.senha());
@@ -56,6 +62,10 @@ public class Estudante extends Usuario {
         if (dados.semestre() != null) {
             this.semestre = dados.semestre();
         }
+    }
+
+    public Curso getCurso() {
+        return curso;
     }
 
     public void excluir() {

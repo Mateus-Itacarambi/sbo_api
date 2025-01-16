@@ -1,5 +1,10 @@
 package ifb.sbo.api.domain.professor;
 
+import ifb.sbo.api.domain.area_interesse.AreaInteresseDetalhaDTO;
+import ifb.sbo.api.domain.curso.CursoDetalhaDTO;
+import ifb.sbo.api.domain.formacao.FormacaoDetalhaDTO;
+import ifb.sbo.api.domain.tema.TemaDetalhaDTO;
+
 import java.time.LocalDate;
 import java.util.List;
 
@@ -11,10 +16,8 @@ public record ProfessorListagemDTO(
         String email,
         String idLattes,
         String disponibilidade,
-        List<String> cursos,
-        List<String> areasDeInteresse) {
-
-    public ProfessorListagemDTO (Professor professor){
-        this(professor.getId(), professor.getNome(), professor.getDataNascimento(), professor.getGenero(), professor.getEmail(), professor.getIdLattes(), String.valueOf(professor.getDisponibilidade()), professor.getCursosString(), professor.getAreasInteresseString());
-    }
+        List<CursoDetalhaDTO> cursos,
+        List<AreaInteresseDetalhaDTO> areasDeInteresse,
+        List<FormacaoDetalhaDTO> formacoes,
+        List<TemaDetalhaDTO> temas) {
 }

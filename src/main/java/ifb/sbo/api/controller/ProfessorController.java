@@ -1,7 +1,10 @@
 package ifb.sbo.api.controller;
 
 
+import ifb.sbo.api.domain.estudante.EstudanteListagemDTO;
+import ifb.sbo.api.domain.formacao.*;
 import ifb.sbo.api.domain.professor.*;
+import ifb.sbo.api.domain.tema.TemaCadastroDTO;
 import ifb.sbo.api.infra.exception.ConflitoException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,10 +20,16 @@ import org.springframework.web.util.UriComponentsBuilder;
 @RequestMapping("professores")
 public class ProfessorController {
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
     @Autowired
     private ProfessorRepository professorRepository;
+
     @Autowired
     private ProfessorService professorService;
+
+    @Autowired
+    private FormacaoRepository formacaoRepository;
+
 
     @PostMapping
     public ResponseEntity cadastrar(@RequestBody @Valid ProfessorCadastroDTO dados, UriComponentsBuilder uriBuilder) {
@@ -36,12 +45,12 @@ public class ProfessorController {
 
         var uri = uriBuilder.path("/professores/{id}").buildAndExpand(professor.getId()).toUri();
 
-        return ResponseEntity.created(uri).body(new ProfessorListagemDTO(professor));
+        return ResponseEntity.created(uri).body(professorService.detalharProfessor(professor.getId()));
     }
 
     @GetMapping
-    public ResponseEntity<Page<ProfessorListagemDTO>> listarProfessores(Pageable pageable) {
-        Page<ProfessorListagemDTO> professores = professorService.listarProfessoresPaginados(pageable);
+    public ResponseEntity<Page<ProfessorListagemDTO>> listar(Pageable paginacao) {
+        Page<ProfessorListagemDTO> professores = professorService.listarProfessoresPaginados(paginacao);
         return ResponseEntity.ok(professores);
     }
 
@@ -50,7 +59,7 @@ public class ProfessorController {
     public ResponseEntity atualizar(@RequestBody @Valid ProfessorAtualizaDTO dados) {
         var professor = professorRepository.getReferenceById(dados.id());
         professor.atualizarInformacoes(dados);
-        return ResponseEntity.ok(new ProfessorListagemDTO(professor));
+        return ResponseEntity.ok(professorService.detalharProfessor(professor.getId()));
     }
 
     @DeleteMapping("/{id}")
@@ -96,4 +105,37 @@ public class ProfessorController {
 
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/{professorId}/adicionarFormacoes")
+    public ResponseEntity<ProfessorListagemDTO> adicionarFormacao(@PathVariable Long professorId, @RequestBody FormacaoCadastroDTO dados, UriComponentsBuilder uriBuilder) {
+        professorService.adicionarFormacao(professorId, dados);
+
+        var uri = uriBuilder.path("/professores/{id}").buildAndExpand(professorId).toUri();
+        return ResponseEntity.created(uri).body(professorService.detalharProfessor(professorId));
+    }
+
+    @DeleteMapping("/{professorId}/removerFormacoes/{formacaoId}")
+    public ResponseEntity removerFormacao(@PathVariable Long professorId, @PathVariable Long formacaoId) {
+        professorService.removerFormacao(professorId, formacaoId);
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/atualizarFormacoes/{formacaoId}")
+    @Transactional
+    public ResponseEntity<FormacaoListagemDTO> atualizarFormacao(@PathVariable Long formacaoId,  @RequestBody FormacaoAtualizaDTO dados) {
+        var formacao = formacaoRepository.getReferenceById(formacaoId);
+        formacao.atualizarFormacao(dados);
+
+        return ResponseEntity.ok(new FormacaoListagemDTO(formacao));
+    }
+
+//    @PostMapping("/{professorId}/cadastrarTema")
+//    public ResponseEntity<ProfessorListagemDTO> cadastrarTema(@PathVariable Long professorId, @RequestBody TemaCadastroDTO dados, UriComponentsBuilder uriBuilder) {
+//        professorService.cadastrarTema(professorId, dados);
+//
+//        var uri = uriBuilder.path("/professores/{id}").buildAndExpand(professorId).toUri();
+//
+//        return ResponseEntity.created(uri).body(professorService.detalharProfessor(professorId));
+//    }
 }

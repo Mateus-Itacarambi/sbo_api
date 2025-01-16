@@ -3,7 +3,7 @@ package ifb.sbo.api.domain.curso;
 
 import jakarta.validation.constraints.NotNull;
 
-public record DadosAtualizaCurso(
+public record CursoAtualizaDTO(
         @NotNull
         Long id,
         String nome,

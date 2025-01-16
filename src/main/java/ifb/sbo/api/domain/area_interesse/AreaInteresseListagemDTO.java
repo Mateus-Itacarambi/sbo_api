@@ -1,10 +1,10 @@
 package ifb.sbo.api.domain.area_interesse;
 
-public record DadosDetalhamentoAreaInteresse (
+public record AreaInteresseListagemDTO(
         Long id,
         String nome) {
 
-    public DadosDetalhamentoAreaInteresse(AreaInteresse areaInteresse) {
+    public AreaInteresseListagemDTO(AreaInteresse areaInteresse) {
         this(areaInteresse.getId(), areaInteresse.getNome());
     }
 }

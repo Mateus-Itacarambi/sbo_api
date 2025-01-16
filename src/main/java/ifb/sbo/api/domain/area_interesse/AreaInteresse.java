@@ -26,12 +26,12 @@ public class AreaInteresse {
     @ManyToMany(mappedBy = "areasInteresse", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Professor> professores = new ArrayList<>();
 
-    public AreaInteresse(DadosCadastroAreaInteresse dados) {
+    public AreaInteresse(AreaInteresseCadastroDTO dados) {
         this.nome = dados.nome();
         this.ativo = true;
     }
 
-    public void atualizarInformacoes(DadosAtualizaAreaInteresse dados) {
+    public void atualizarInformacoes(AreaInteresseAtualizaDTO dados) {
         if (dados.nome() != null) {
             this.nome = dados.nome();
         }

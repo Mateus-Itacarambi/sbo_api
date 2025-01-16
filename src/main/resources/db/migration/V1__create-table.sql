@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS usuario (
     nome VARCHAR(200) NOT NULL,
     data_nascimento DATE NOT NULL,
     genero VARCHAR(45) NOT NULL,
-    email VARCHAR(200) NOT NULL,
+    email VARCHAR(200) NOT NULL UNIQUE,
     senha VARCHAR(255) NOT NULL,
     data_cadastro DATETIME NOT NULL,
     ativo BOOLEAN
@@ -17,20 +17,36 @@ CREATE TABLE IF NOT EXISTS curso (
     ativo BOOLEAN
     );
 
-CREATE TABLE IF NOT EXISTS estudante (
-    semestre INT NOT NULL,
-    matricula VARCHAR(45) NOT NULL,
-    id_usuario INT PRIMARY KEY NOT NULL,
-    id_curso INT NOT NULL,
-    FOREIGN KEY (id_usuario) REFERENCES usuario (id_usuario),
-    FOREIGN KEY (id_curso) REFERENCES curso (id_curso)
-    );
-
 CREATE TABLE IF NOT EXISTS professor (
     id_lattes VARCHAR(50) NOT NULL,
     disponibilidade VARCHAR(50) NOT NULL,
     id_usuario INT PRIMARY KEY NOT NULL,
     FOREIGN KEY (id_usuario) REFERENCES usuario (id_usuario)
+    );
+
+CREATE TABLE IF NOT EXISTS tema (
+    id_tema INT AUTO_INCREMENT PRIMARY KEY,
+    titulo VARCHAR(200) NOT NULL,
+    descricao VARCHAR(200) NOT NULL,
+    palavras_chave VARCHAR(200) NOT NULL,
+    area_conhecimento VARCHAR(200) NOT NULL,
+    status VARCHAR(45) NOT NULL,
+    data_cadastro DATETIME NOT NULL,
+    data_atualizacao DATETIME NOT NULL,
+    ativo BOOLEAN,
+    id_professor INT,
+    FOREIGN KEY (id_professor) REFERENCES professor (id_usuario)
+    );
+
+CREATE TABLE IF NOT EXISTS estudante (
+    semestre INT NOT NULL,
+    matricula VARCHAR(45) NOT NULL,
+    id_usuario INT PRIMARY KEY NOT NULL,
+    id_curso INT NOT NULL,
+    id_tema INT,
+    FOREIGN KEY (id_usuario) REFERENCES usuario (id_usuario),
+    FOREIGN KEY (id_curso) REFERENCES curso (id_curso),
+    FOREIGN KEY (id_tema) REFERENCES tema (id_tema) ON DELETE SET NULL
     );
 
 CREATE TABLE IF NOT EXISTS formacao (
@@ -39,10 +55,9 @@ CREATE TABLE IF NOT EXISTS formacao (
     modalidade VARCHAR(50) NOT NULL,
     faculdade VARCHAR(255) NOT NULL,
     titulo VARCHAR(255) NOT NULL,
-    anoInicio DATE NOT NULL,
-    anoFim DATE,
+    ano_inicio INT NOT NULL,
+    ano_fim INT,
     id_professor INT NOT NULL,
-    ativo BOOLEAN,
     FOREIGN KEY (id_professor) REFERENCES professor (id_usuario)
     );
 

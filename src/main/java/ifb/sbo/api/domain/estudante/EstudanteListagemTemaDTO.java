@@ -7,7 +7,7 @@ import ifb.sbo.api.domain.tema.TemaDetalhaDTO;
 import java.time.LocalDate;
 
 
-public record EstudanteListagemDTO(
+public record EstudanteListagemTemaDTO(
         Long id,
         String nome,
         LocalDate dataNascimento,
@@ -15,6 +15,5 @@ public record EstudanteListagemDTO(
         String email,
         String matricula,
         Integer semestre,
-        CursoDetalhaDTO curso,
-        TemaDetalhaDTO tema) {
+        CursoDetalhaDTO curso) {
 }

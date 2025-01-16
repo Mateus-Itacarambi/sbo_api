@@ -1,9 +1,17 @@
 package ifb.sbo.api.domain.professor;
 
 import ifb.sbo.api.domain.area_interesse.AreaInteresse;
+import ifb.sbo.api.domain.area_interesse.AreaInteresseDetalhaDTO;
 import ifb.sbo.api.domain.area_interesse.AreaInteresseRepository;
 import ifb.sbo.api.domain.curso.Curso;
+import ifb.sbo.api.domain.curso.CursoDetalhaDTO;
+import ifb.sbo.api.domain.curso.CursoListagemDTO;
 import ifb.sbo.api.domain.curso.CursoRepository;
+import ifb.sbo.api.domain.formacao.Formacao;
+import ifb.sbo.api.domain.formacao.FormacaoCadastroDTO;
+import ifb.sbo.api.domain.formacao.FormacaoDetalhaDTO;
+import ifb.sbo.api.domain.formacao.FormacaoRepository;
+import ifb.sbo.api.domain.tema.*;
 import ifb.sbo.api.infra.exception.ConflitoException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,15 +21,31 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 
 @Service
 public class ProfessorService {
     @Autowired
     private ProfessorRepository professorRepository;
+
     @Autowired
     private AreaInteresseRepository areaInteresseRepository;
+
     @Autowired
     private CursoRepository cursoRepository;
+
+    @Autowired
+    private FormacaoRepository formacaoRepository;
+
+    @Autowired
+    private TemaRepository temaRepository;
+
+//    private TemaService temaService;
+//
+//    public ProfessorService(TemaService temaService) {
+//        this.temaService = temaService;
+//    }
 
     @Transactional
     public void adicionarAreaInteresse(Long professorId, Long areaInteresseId) {
@@ -41,7 +65,7 @@ public class ProfessorService {
         AreaInteresse areaInteresse = buscarAreaInteresse(areaInteresseId);
 
         if (!professor.getAreasInteresse().contains(areaInteresse)) {
-            throw new ConflitoException("Esta área de interesse já foi removida");
+            throw new ConflitoException("Esta área de interesse já foi removida ao professor.");
         }
 
         professor.getAreasInteresse().remove(areaInteresse);
@@ -65,11 +89,50 @@ public class ProfessorService {
         Curso curso = buscarCurso(cursoId);
 
         if (!professor.getCursos().contains(curso)) {
-            throw new ConflitoException("Este curso já foi adicionado ao professor.");
+            throw new ConflitoException("Este curso já foi removida ao professor.");
         }
 
         professor.getCursos().remove(curso);
     }
+
+    @Transactional
+    public void adicionarFormacao(Long professorId, FormacaoCadastroDTO dados) {
+        Professor professor = buscarProfessor(professorId);
+        Formacao formacao = new Formacao(dados);
+        formacao.setProfessor(professor);
+        formacaoRepository.save(formacao);
+    }
+
+    @Transactional
+    public void removerFormacao(Long professorId, Long formacaoId) {
+        Professor professor = buscarProfessor(professorId);
+        Formacao formacao = buscarFormacao(formacaoId);
+
+        if (!professor.getFormacoes().contains(formacao)) {
+            throw new ConflitoException("Esta formação já foi removida ao professor.");
+        }
+
+        professor.getFormacoes().remove(formacao);
+        formacao.setProfessor(null);
+
+        professorRepository.save(professor);
+
+        formacaoRepository.deleteById(formacaoId);
+    }
+
+//    @Transactional
+//    public void cadastrarTema(Long professorId, TemaCadastroDTO dados) {
+//        temaService.buscarTemaTitulo(dados.titulo());
+//        var professor = buscarProfessor(professorId);
+//
+//        var tema = new Tema(dados);
+//        tema.setStatus("Disponível");
+//
+//        tema.setProfessor(professor);
+//
+//        temaRepository.save(tema);
+//        professorRepository.save(professor);
+//    }
 
     public Page<ProfessorListagemDTO> listarProfessoresPaginados(@PageableDefault(size = 20, sort = {"nome"}) Pageable paginacao) {
         return professorRepository.findAllByAtivoTrue(paginacao)
@@ -81,7 +144,7 @@ public class ProfessorService {
         return mapearParaDTO(professor);
     }
 
-    private Professor buscarProfessor(Long professorId) {
+    public Professor buscarProfessor(Long professorId) {
         return professorRepository.findByIdAndAtivoTrue(professorId)
                 .orElseThrow(() -> new EntityNotFoundException("Professor não encontrado."));
     }
@@ -96,7 +159,41 @@ public class ProfessorService {
                 .orElseThrow(() -> new EntityNotFoundException("Curso não encontrado."));
     }
 
+    private Formacao buscarFormacao(Long formacaoId) {
+        return formacaoRepository.findById(formacaoId)
+                .orElseThrow(() -> new EntityNotFoundException("Formação não encontrada."));
+    }
+
     private ProfessorListagemDTO mapearParaDTO(Professor professor) {
+        List<CursoDetalhaDTO> cursosDTO = professor.getCursos()
+                .stream()
+                .map(curso -> new CursoDetalhaDTO(
+                        curso.getNome())).toList();
+
+        List<AreaInteresseDetalhaDTO> areasInteresseDTO = professor.getAreasInteresse()
+                .stream()
+                .map(areaInteresse -> new AreaInteresseDetalhaDTO(
+                        areaInteresse.getNome())).toList();
+
+        List<FormacaoDetalhaDTO> formacoesDTO = professor.getFormacoes()
+                .stream()
+                .map(formacao -> new FormacaoDetalhaDTO(
+                        formacao.getCurso(),
+                        formacao.getModalidade(),
+                        formacao.getFaculdade(),
+                        formacao.getTitulo(),
+                        formacao.getAnoInicio(),
+                        formacao.getAnoFim())).toList();
+
+        List<TemaDetalhaDTO> temasDTO = professor.getTemas()
+                .stream()
+                .map(tema -> new TemaDetalhaDTO(
+                        tema.getTitulo(),
+                        tema.getDescricao(),
+                        tema.getPalavrasChave(),
+                        tema.getAreaConhecimento())).toList();
+
+
         return new ProfessorListagemDTO(
                 professor.getId(),
                 professor.getNome(),
@@ -105,8 +202,10 @@ public class ProfessorService {
                 professor.getEmail(),
                 professor.getIdLattes(),
                 String.valueOf(professor.getDisponibilidade()),
-                professor.getCursosString(),
-                professor.getAreasInteresseString()
+                cursosDTO,
+                areasInteresseDTO,
+                formacoesDTO,
+                temasDTO
         );
     }
 }

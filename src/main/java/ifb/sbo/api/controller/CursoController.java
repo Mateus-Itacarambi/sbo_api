@@ -1,6 +1,7 @@
 package ifb.sbo.api.controller;
 
 import ifb.sbo.api.domain.curso.*;
+import ifb.sbo.api.infra.exception.ConflitoException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -19,41 +20,45 @@ public class CursoController {
     private CursoRepository repository;
 
     @PostMapping
-    public ResponseEntity createCurso(@RequestBody @Valid DadosCadastroCurso dados, UriComponentsBuilder uriBuilder) {
+    public ResponseEntity cadastrar(@RequestBody @Valid CursoCadastroDTO dados, UriComponentsBuilder uriBuilder) {
+        if (repository.countByNomeAndAtivoTrue(dados.nome()) != 0) {
+                throw new ConflitoException("Esse curso já existe!");
+            }
+
         var curso = new Curso(dados);
         repository.save(curso);
 
         var uri = uriBuilder.path("/cursos/{id}").buildAndExpand(curso.getId()).toUri();
 
-        return ResponseEntity.created(uri).body(new DadosDetalhamentoCurso(curso));
+        return ResponseEntity.created(uri).body(new CursoListagemDTO(curso));
     }
 
     @GetMapping
-    public ResponseEntity<Page<DadosListagemCurso>> listarCursos(@PageableDefault(size = 10, sort = {"nome"}) Pageable paginacao) {
-        var page = repository.findAllByAtivoTrue(paginacao).map(DadosListagemCurso::new);
+    public ResponseEntity<Page<CursoListagemDTO>> listar(@PageableDefault(size = 10, sort = {"nome"}) Pageable paginacao) {
+        var page = repository.findAllByAtivoTrue(paginacao).map(CursoListagemDTO::new);
         return ResponseEntity.ok(page);
     }
 
     @PutMapping
     @Transactional
-    public ResponseEntity atualizarCurso(@RequestBody @Valid DadosAtualizaCurso dados) {
+    public ResponseEntity atualizar(@RequestBody @Valid CursoAtualizaDTO dados) {
         var curso = repository.getReferenceById(dados.id());
         curso.atualizarInformacoes(dados);
-        return ResponseEntity.ok(new DadosDetalhamentoCurso(curso));
+        return ResponseEntity.ok(new CursoListagemDTO(curso));
     }
 
     @DeleteMapping("/{id}")
     @Transactional
-    public ResponseEntity excluirCurso(@PathVariable Long id) {
+    public ResponseEntity desativar(@PathVariable Long id) {
         var curso = repository.getReferenceById(id);
         curso.excluir();
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity detalharCurso(@PathVariable Long id) {
+    public ResponseEntity detalhar(@PathVariable Long id) {
         var curso = repository.getReferenceById(id);
-        return ResponseEntity.ok(new DadosDetalhamentoCurso(curso));
+        return ResponseEntity.ok(new CursoListagemDTO(curso));
     }
 
 }
