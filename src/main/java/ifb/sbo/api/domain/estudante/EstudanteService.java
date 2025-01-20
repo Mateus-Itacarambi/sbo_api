@@ -40,24 +40,6 @@ public class EstudanteService {
         return mapearParaDTO(estudante);
     }
 
-//    @Transactional
-//    public void adicionarEstudanteAoTema(Long temaId, String matricula) {
-//        var tema = temaService.buscarTema(temaId);
-//
-//        if (tema.getEstudantes().size() >= 2) {
-//            throw new ConflitoException("Este tema já possui o número máximo de estudantes (2).");
-//        }
-//
-//        var estudante = buscarEstudanteMatricula(matricula);
-//
-//        verificarTemaEstudante(estudante.getId());
-//
-//        estudante.setTema(tema);
-//        tema.getEstudantes().add(estudante);
-//
-//        estudanteRepository.save(estudante);
-//    }
-
     public Page<EstudanteListagemDTO> listarEstudantesPaginados(@PageableDefault(size = 20, sort = {"nome"}) Pageable paginacao) {
         return estudanteRepository.findAllByAtivoTrue(paginacao)
                 .map(this::mapearParaDTO);
@@ -67,8 +49,6 @@ public class EstudanteService {
         var estudante = buscarEstudante(estudanteId);
         return mapearParaDTO(estudante);
     }
-
-
 
     private Curso buscarCurso(Long cursoId) {
         return cursoRepository.findByIdAndAtivoTrue(cursoId)
@@ -92,7 +72,7 @@ public class EstudanteService {
                 .orElseThrow(() -> new EntityNotFoundException("Estudante não encontrado!"));
     }
 
-    private Estudante buscarEstudanteMatricula(String matricula) {
+    public Estudante buscarEstudanteMatricula(String matricula) {
         return estudanteRepository.findByMatriculaAndAtivoTrue(matricula)
                 .orElseThrow(() -> new EntityNotFoundException("Estudante não encontrado!"));
     }
@@ -101,6 +81,12 @@ public class EstudanteService {
         var estudante = buscarEstudante(estudanteId);
         if (estudante.getTema() != null) {
             throw new ConflitoException("Este estudante já está associado a um tema.");
+        }
+    }
+
+    public void estudanteTemTema(Estudante estudante) {
+        if (estudante.getTema() == null) {
+            throw new ConflitoException("Este estudante precisa ser associado a um tema.");
         }
     }
 

@@ -3,6 +3,7 @@ package ifb.sbo.api.domain.professor;
 import ifb.sbo.api.domain.area_interesse.AreaInteresse;
 import ifb.sbo.api.domain.curso.Curso;
 import ifb.sbo.api.domain.formacao.Formacao;
+import ifb.sbo.api.domain.solicitacao.Solicitacao;
 import ifb.sbo.api.domain.tema.Tema;
 import ifb.sbo.api.domain.usuario.Usuario;
 import jakarta.persistence.*;
@@ -47,6 +48,8 @@ public class Professor extends Usuario {
     private List<Formacao> formacoes = new ArrayList<>();
     @OneToMany(mappedBy = "professor", cascade = CascadeType.ALL)
     private List<Tema> temas = new ArrayList<>();
+    @OneToMany(mappedBy = "professor", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Solicitacao> solicitacoes = new ArrayList<>();
 
     public Professor(ProfessorCadastroDTO dados) {
         super(dados.nome(), dados.dataNascimento(), dados.genero(), dados.email(), dados.senha());

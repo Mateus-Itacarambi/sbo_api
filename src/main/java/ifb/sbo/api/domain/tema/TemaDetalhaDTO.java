@@ -1,5 +1,6 @@
 package ifb.sbo.api.domain.tema;
 
+
 public record TemaDetalhaDTO(
         String titulo,
         String descricao,

@@ -1,5 +1,6 @@
 package ifb.sbo.api.domain.estudante;
 
+import ifb.sbo.api.domain.solicitacao.Solicitacao;
 import ifb.sbo.api.domain.tema.Tema;
 import ifb.sbo.api.domain.usuario.Usuario;
 import ifb.sbo.api.domain.curso.Curso;
@@ -8,6 +9,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Table(name = "estudante")
@@ -20,12 +24,14 @@ import lombok.Setter;
 public class Estudante extends Usuario {
     private String matricula;
     private Integer semestre;
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "id_curso", nullable = false)
     private Curso curso;
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "id_tema")
     private Tema tema;
+    @OneToMany(mappedBy = "estudante", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Solicitacao> solicitacoes = new ArrayList<>();
 
     public Estudante(EstudanteCadastroDTO dados, Curso curso) {
         super(dados.nome(), dados.dataNascimento(), dados.genero(), dados.email(), dados.senha());

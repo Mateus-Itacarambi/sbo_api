@@ -26,15 +26,15 @@ public class TemaService {
     @Autowired
     private EstudanteRepository estudanteRepository;
 
-    private final EstudanteService estudanteService;
+    @Autowired
+    private UsuarioRepository usuarioRepository;
 
     @Autowired
     private ProfessorRepository professorRepository;
 
-    private final ProfessorService professorService;
+    private final EstudanteService estudanteService;
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+    private final ProfessorService professorService;
 
     public TemaService(EstudanteService estudanteService, ProfessorService professorService) {
         this.estudanteService = estudanteService;
@@ -94,6 +94,43 @@ public class TemaService {
         return detalharTema(temaId);
     }
 
+    @Transactional
+    public void adicionarEstudanteAoTema(Long temaId, Long usuarioId, String matricula) {
+        var tema = buscarTema(temaId);
+
+        if (tema.getEstudantes().size() >= 2) {
+            throw new ConflitoException("Este tema já possui o número máximo de estudantes (2).");
+        }
+
+        verificarUsuario(usuarioId, tema);
+
+        var estudante = estudanteService.buscarEstudanteMatricula(matricula);
+
+        estudanteService.verificarTemaEstudante(estudante.getId());
+
+        estudante.setTema(tema);
+        tema.getEstudantes().add(estudante);
+
+        estudanteRepository.save(estudante);
+    }
+
+    @Transactional
+    public void removerEstudanteDoTema(Long temaId, Long usuarioId, Long estudanteId) {
+        Tema tema = buscarTema(temaId);
+
+        verificarUsuario(usuarioId, tema);
+
+        Estudante estudante = estudanteService.buscarEstudante(estudanteId);
+
+        if (tema.getEstudantes().stream()
+                .noneMatch(e -> e.getId().equals(estudante.getId()))) {
+            throw new ConflitoException("O estudante não está associado a este tema.");
+        }
+
+        estudante.setTema(null);
+        estudanteRepository.save(estudante);
+    }
+
     public TemaListagemDTO detalharTema(Long temaId) {
         var tema = buscarTema(temaId);
         return mapearParaDTO(tema);
@@ -129,6 +166,7 @@ public class TemaService {
                 tema.getAreaConhecimento(),
                 tema.getStatus(),
                 tema.getProfessor() != null ? new ProfessorDetalhaDTO(
+                        tema.getProfessor().getId(),
                         tema.getProfessor().getNome()
                 ) : null,
                 estudantesDTO);

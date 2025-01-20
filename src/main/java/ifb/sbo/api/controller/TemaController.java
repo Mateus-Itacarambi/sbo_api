@@ -3,7 +3,6 @@ package ifb.sbo.api.controller;
 import ifb.sbo.api.domain.estudante.EstudanteListagemDTO;
 import ifb.sbo.api.domain.professor.ProfessorListagemDTO;
 import ifb.sbo.api.domain.tema.*;
-import ifb.sbo.api.domain.usuario.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,12 +16,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 public class TemaController {
     @Autowired
     private TemaService temaService;
-
-    @Autowired
-    private TemaRepository temaRepository;
-
-    @Autowired
-    private UsuarioRepository usuarioRepository;
 
     @PostMapping("/professor/{professorId}")
     public ResponseEntity<ProfessorListagemDTO> criarTemaProfessor(@PathVariable Long professorId, @RequestBody TemaCadastroDTO dados, UriComponentsBuilder uriBuilder) {
@@ -46,8 +39,13 @@ public class TemaController {
         return ResponseEntity.ok(temas);
     }
 
+    @GetMapping("{temaId}")
+    public ResponseEntity<TemaListagemDTO> detalharTema(@PathVariable Long temaId) {
+        return ResponseEntity.ok(temaService.detalharTema(temaId));
+    }
+
     @PutMapping("/{temaId}/atualizar/{usuarioId}")
-    public ResponseEntity<TemaListagemDTO> atualizarFormacao(@PathVariable Long temaId, @PathVariable Long usuarioId, @RequestBody TemaAtualizaDTO dados) {
+    public ResponseEntity<TemaListagemDTO> atualizarTema(@PathVariable Long temaId, @PathVariable Long usuarioId, @RequestBody TemaAtualizaDTO dados) {
         var tema = temaService.atualizarTema(temaId, usuarioId, dados);
         return ResponseEntity.ok(tema);
     }
@@ -58,12 +56,18 @@ public class TemaController {
         return ResponseEntity.noContent().build();
     }
 
-    // Associar Estudante ao Tema
-//    @PostMapping("/{temaId}/estudantes/{estudanteId}")
-//    public ResponseEntity<Tema> adicionarEstudanteAoTema(
-//            @PathVariable Long temaId,
-//            @PathVariable Long estudanteId) {
-//        Tema tema = temaService.adicionarEstudanteAoTema(temaId, estudanteId);
-//        return ResponseEntity.ok(tema);
-//    }
+    @PostMapping("/{temaId}/adicionarEstudante/{usuarioId}")
+    public ResponseEntity adicionarEstudanteAoTema(@PathVariable Long temaId, @PathVariable Long usuarioId, @RequestBody EstudanteListagemDTO dados, UriComponentsBuilder uriBuilder) {
+        temaService.adicionarEstudanteAoTema(temaId, usuarioId, dados.matricula());
+
+        var uri = uriBuilder.path("/temas/{id}").buildAndExpand(temaId).toUri();
+
+        return ResponseEntity.created(uri).body(temaService.detalharTema(temaId));
+    }
+
+    @DeleteMapping("/{temaId}/removerEstudante/{usuarioId}/{estudanteId}")
+    public ResponseEntity removerEstudanteDoTema(@PathVariable Long temaId, @PathVariable Long usuarioId, @PathVariable Long estudanteId) {
+        temaService.removerEstudanteDoTema(temaId, usuarioId, estudanteId);
+        return ResponseEntity.noContent().build();
+    }
 }

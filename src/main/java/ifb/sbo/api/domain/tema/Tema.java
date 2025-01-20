@@ -2,6 +2,7 @@ package ifb.sbo.api.domain.tema;
 
 import ifb.sbo.api.domain.estudante.Estudante;
 import ifb.sbo.api.domain.professor.Professor;
+import ifb.sbo.api.domain.solicitacao.Solicitacao;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -36,6 +37,8 @@ public class Tema {
     private Professor professor;
     @OneToMany(mappedBy = "tema", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
     private List<Estudante> estudantes = new ArrayList<>();
+    @OneToMany(mappedBy = "tema", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Solicitacao> solicitacoes = new ArrayList<>();
 
     public Tema(TemaCadastroDTO dados) {
         this.titulo = dados.titulo();
