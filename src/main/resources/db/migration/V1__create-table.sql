@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS usuario (
     email VARCHAR(200) NOT NULL UNIQUE,
     senha VARCHAR(255) NOT NULL,
     data_cadastro DATETIME NOT NULL,
+    tipo VARCHAR(50) NOT NULL,
     ativo BOOLEAN
     );
 
@@ -30,10 +31,9 @@ CREATE TABLE IF NOT EXISTS tema (
     descricao VARCHAR(200) NOT NULL,
     palavras_chave VARCHAR(200) NOT NULL,
     area_conhecimento VARCHAR(200) NOT NULL,
-    status VARCHAR(45) NOT NULL,
+    status_tema VARCHAR(45) NOT NULL,
     data_cadastro DATETIME NOT NULL,
     data_atualizacao DATETIME NOT NULL,
-    ativo BOOLEAN,
     id_professor INT,
     FOREIGN KEY (id_professor) REFERENCES professor (id_usuario)
     );

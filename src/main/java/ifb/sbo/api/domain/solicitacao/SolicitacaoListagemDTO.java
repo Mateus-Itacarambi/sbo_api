@@ -1,5 +1,6 @@
 package ifb.sbo.api.domain.solicitacao;
 
+import ifb.sbo.api.domain.estudante.EstudanteDetalhaDTO;
 import ifb.sbo.api.domain.professor.ProfessorDetalhaDTO;
 import ifb.sbo.api.domain.tema.TemaDetalhaSolicitacaoDTO;
 
@@ -11,4 +12,6 @@ public record SolicitacaoListagemDTO(
         LocalDate dataSolicitacao,
         LocalDate dataConclusaoOrientacao,
         TemaDetalhaSolicitacaoDTO tema,
-        ProfessorDetalhaDTO professor) {}
+        ProfessorDetalhaDTO professor,
+        EstudanteDetalhaDTO estudante,
+        String motivo) {}

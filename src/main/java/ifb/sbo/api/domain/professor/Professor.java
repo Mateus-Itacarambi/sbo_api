@@ -12,6 +12,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.validator.constraints.UniqueElements;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,7 +55,7 @@ public class Professor extends Usuario {
     public Professor(ProfessorCadastroDTO dados) {
         super(dados.nome(), dados.dataNascimento(), dados.genero(), dados.email(), dados.senha());
         this.idLattes = dados.idLattes();
-        this.disponibilidade = Disponibilidade.valueOf("DISPONIVEL");
+        this.disponibilidade = Disponibilidade.DISPONIVEL;
         this.ativo = true;
     }
 
@@ -76,7 +77,8 @@ public class Professor extends Usuario {
         }
 
         if (dados.senha() != null) {
-            super.senha = dados.senha();
+            BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+            super.senha = passwordEncoder.encode(dados.senha());
         }
 
         if (dados.idLattes() != null) {

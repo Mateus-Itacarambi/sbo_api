@@ -12,13 +12,9 @@ public interface TemaRepository extends JpaRepository<Tema, Long> {
     @Query("SELECT t FROM Tema t WHERE t.status = 'Disponível'")
     Page<Tema> findAllByStatusDisponivel(Pageable paginacao);
 
+    Page<Tema> findAllByProfessor_Id(Long id, Pageable paginacao);
+
     int countByTitulo(String titulo);
-
-    Optional<Tema> findByIdAndAtivoTrue(Long temaId);
-
-    Optional<Tema> findByTituloAndAtivoTrue(String titulo);
-
-    int countByTituloAndAtivoTrue(String titulo);
 
     @Query("SELECT t FROM Tema t JOIN FETCH t.estudantes WHERE t.id = :id")
     Optional<Tema> findByIdWithEstudantes(@Param("id") Long id);
@@ -27,4 +23,5 @@ public interface TemaRepository extends JpaRepository<Tema, Long> {
     @Query("SELECT t FROM Tema t WHERE t.id = :id")
     Optional<Tema> findById(@Param("id") Long id);
 
+    Optional<Tema> findByIdAndStatus(Long temaId, StatusTema statusTema);
 }

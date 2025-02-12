@@ -6,7 +6,10 @@ import ifb.sbo.api.domain.tema.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -26,9 +29,8 @@ public class TemaController {
     }
 
     @PostMapping("/estudante/{estudanteId}")
-    public ResponseEntity<EstudanteListagemDTO> criarTemaEstudante(@PathVariable Long estudanteId, @RequestBody TemaCadastroDTO dados, UriComponentsBuilder uriBuilder) {
+    public ResponseEntity<?> criarTemaEstudante(@PathVariable Long estudanteId, @RequestBody TemaCadastroDTO dados, UriComponentsBuilder uriBuilder) {
         var estudante = temaService.criarTemaEstudante(estudanteId, dados);
-
         var uri = uriBuilder.path("/estudantes/{id}").buildAndExpand(estudanteId).toUri();
         return ResponseEntity.created(uri).body(estudante);
     }
@@ -39,7 +41,13 @@ public class TemaController {
         return ResponseEntity.ok(temas);
     }
 
-    @GetMapping("{temaId}")
+    @GetMapping("/professor/{professorId}")
+    public ResponseEntity<Page<TemaListagemDTO>> listarTemasProfessor(@PathVariable Long professorId, Pageable paginacao) {
+        Page<TemaListagemDTO> temas = temaService.listarTemasPaginadosPorProfessor(professorId, paginacao);
+        return ResponseEntity.ok(temas);
+    }
+
+    @GetMapping("/{temaId}")
     public ResponseEntity<TemaListagemDTO> detalharTema(@PathVariable Long temaId) {
         return ResponseEntity.ok(temaService.detalharTema(temaId));
     }

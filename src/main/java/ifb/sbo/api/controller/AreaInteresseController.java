@@ -2,7 +2,6 @@ package ifb.sbo.api.controller;
 
 import ifb.sbo.api.domain.area_interesse.*;
 import jakarta.validation.Valid;
-import jakarta.validation.ValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,18 +17,15 @@ public class AreaInteresseController {
     @Autowired
     private AreaInteresseRepository repository;
 
+    @Autowired
+    private AreaInteresseService areaInteresseService;
+
     @PostMapping
     public ResponseEntity cadastrar(@RequestBody @Valid AreaInteresseCadastroDTO dados, UriComponentsBuilder uriBuilder) {
-        if (repository.existsByNome(dados.nome())) {
-            throw new ValidationException("Área de Interesse já cadastrado!");
-        }
+        var areaInteresse = areaInteresseService.cadastrar(dados);
+        var uri = uriBuilder.path("/areasInteresse/{id}").buildAndExpand(areaInteresse.id()).toUri();
 
-        var areaInteresse = new AreaInteresse(dados);
-        repository.save(areaInteresse);
-
-        var uri = uriBuilder.path("/areasInteresse/{id}").buildAndExpand(areaInteresse.getId()).toUri();
-
-        return ResponseEntity.created(uri).body(new AreaInteresseListagemDTO(areaInteresse));
+        return ResponseEntity.created(uri).body(areaInteresse);
     }
 
     @GetMapping
@@ -50,13 +46,20 @@ public class AreaInteresseController {
     @Transactional
     public ResponseEntity desativar(@PathVariable Long id) {
         var areaInteresse = repository.getReferenceById(id);
-        areaInteresse.excluir();
+        areaInteresse.desativar();
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity detalhar(@PathVariable Long id) {
+    @PutMapping("/ativar/{id}")
+    @Transactional
+    public ResponseEntity ativar(@PathVariable Long id) {
         var areaInteresse = repository.getReferenceById(id);
+        areaInteresse.ativar();
         return ResponseEntity.ok(new AreaInteresseListagemDTO(areaInteresse));
+    }
+
+    @GetMapping("{id}")
+    public ResponseEntity <AreaInteresseListagemDTO> detalhar (@PathVariable Long id) {
+        return ResponseEntity.ok(areaInteresseService.detalhar(id));
     }
 }

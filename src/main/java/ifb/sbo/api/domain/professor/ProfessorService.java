@@ -5,13 +5,14 @@ import ifb.sbo.api.domain.area_interesse.AreaInteresseDetalhaDTO;
 import ifb.sbo.api.domain.area_interesse.AreaInteresseRepository;
 import ifb.sbo.api.domain.curso.Curso;
 import ifb.sbo.api.domain.curso.CursoDetalhaDTO;
-import ifb.sbo.api.domain.curso.CursoListagemDTO;
 import ifb.sbo.api.domain.curso.CursoRepository;
 import ifb.sbo.api.domain.formacao.Formacao;
 import ifb.sbo.api.domain.formacao.FormacaoCadastroDTO;
 import ifb.sbo.api.domain.formacao.FormacaoDetalhaDTO;
 import ifb.sbo.api.domain.formacao.FormacaoRepository;
 import ifb.sbo.api.domain.tema.*;
+import ifb.sbo.api.domain.usuario.TipoUsuario;
+import ifb.sbo.api.domain.usuario.UsuarioService;
 import ifb.sbo.api.infra.exception.ConflitoException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,13 +40,18 @@ public class ProfessorService {
     private FormacaoRepository formacaoRepository;
 
     @Autowired
-    private TemaRepository temaRepository;
+    private UsuarioService usuarioService;
 
-//    private TemaService temaService;
-//
-//    public ProfessorService(TemaService temaService) {
-//        this.temaService = temaService;
-//    }
+    public ProfessorListagemDTO cadastrar(ProfessorCadastroDTO dados) {
+        usuarioService.buscarEmail(dados.email());
+        buscarLattes(dados.idLattes());
+
+        var professor = new Professor(dados);
+        professor.setRole(TipoUsuario.PROFESSOR);
+        professorRepository.save(professor);
+
+        return mapearParaDTO(professor);
+    }
 
     @Transactional
     public void adicionarAreaInteresse(Long professorId, Long areaInteresseId) {
@@ -120,20 +126,6 @@ public class ProfessorService {
         formacaoRepository.deleteById(formacaoId);
     }
 
-//    @Transactional
-//    public void cadastrarTema(Long professorId, TemaCadastroDTO dados) {
-//        temaService.buscarTemaTitulo(dados.titulo());
-//        var professor = buscarProfessor(professorId);
-//
-//        var tema = new Tema(dados);
-//        tema.setStatus("Disponível");
-//
-//        tema.setProfessor(professor);
-//
-//        temaRepository.save(tema);
-//        professorRepository.save(professor);
-//    }
-
     public Page<ProfessorListagemDTO> listarProfessoresPaginados(@PageableDefault(size = 20, sort = {"nome"}) Pageable paginacao) {
         return professorRepository.findAllByAtivoTrue(paginacao)
                 .map(this::mapearParaDTO);
@@ -164,6 +156,12 @@ public class ProfessorService {
                 .orElseThrow(() -> new EntityNotFoundException("Formação não encontrada."));
     }
 
+    public void buscarLattes(String idLattes) {
+        if (professorRepository.countByIdLattes(idLattes) != 0) {
+            throw new ConflitoException("Lattes já cadastrado no sistema!");
+        }
+    }
+
     private ProfessorListagemDTO mapearParaDTO(Professor professor) {
         List<CursoDetalhaDTO> cursosDTO = professor.getCursos()
                 .stream()
@@ -191,7 +189,8 @@ public class ProfessorService {
                         tema.getTitulo(),
                         tema.getDescricao(),
                         tema.getPalavrasChave(),
-                        tema.getAreaConhecimento())).toList();
+                        tema.getAreaConhecimento(),
+                        tema.getStatus().getDescricao())).toList();
 
 
         return new ProfessorListagemDTO(

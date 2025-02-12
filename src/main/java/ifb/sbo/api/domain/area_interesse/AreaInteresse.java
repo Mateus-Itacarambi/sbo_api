@@ -37,7 +37,11 @@ public class AreaInteresse {
         }
     }
 
-    public void excluir() {
+    public void desativar() {
         this.ativo = false;
+    }
+
+    public void ativar() {
+        this.ativo = true;
     }
 }

@@ -1,7 +1,6 @@
 package ifb.sbo.api.controller;
 
 import ifb.sbo.api.domain.estudante.*;
-import ifb.sbo.api.domain.tema.*;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -20,19 +19,11 @@ public class EstudanteController {
     @Autowired
     private EstudanteService estudanteService;
 
-    @Autowired
-    private TemaRepository temaRepository;
-
-    private final TemaService temaService;
-
-    public EstudanteController(TemaService temaService) {
-        this.temaService = temaService;
-    }
-
     @PostMapping
     public ResponseEntity cadastrar(@RequestBody @Valid EstudanteCadastroDTO dados, UriComponentsBuilder uriBuilder) {
         var estudante = estudanteService.cadastrar(dados);
         var uri = uriBuilder.path("/estudantes/{id}").buildAndExpand(estudante.id()).toUri();
+
         return ResponseEntity.created(uri).body(estudante);
     }
 

@@ -26,16 +26,17 @@ public class Tema {
     private String descricao;
     private String palavrasChave;
     private String areaConhecimento;
-    private String status;
+    @Column(name = "status_tema")
+    @Enumerated(EnumType.STRING)
+    private StatusTema status;
     @Column(name = "data_cadastro")
     private LocalDate dataCadastro;
     @Column(name = "data_atualizacao")
     private LocalDate dataAtualizacao;
-    private Boolean ativo;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_professor", nullable = false)
     private Professor professor;
-    @OneToMany(mappedBy = "tema", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "tema", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private List<Estudante> estudantes = new ArrayList<>();
     @OneToMany(mappedBy = "tema", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Solicitacao> solicitacoes = new ArrayList<>();
@@ -47,8 +48,7 @@ public class Tema {
         this.areaConhecimento = dados.areaConhecimento();
         this.dataCadastro = LocalDate.now();
         this.dataAtualizacao = LocalDate.now();
-        this.status = "Disponível";
-        this.ativo = true;
+        this.status = StatusTema.DISPONIVEL;
     }
 
     public void atualizarTema(TemaAtualizaDTO dados) {

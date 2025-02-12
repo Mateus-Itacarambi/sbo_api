@@ -1,7 +1,6 @@
 package ifb.sbo.api.controller;
 
 import ifb.sbo.api.domain.curso.*;
-import ifb.sbo.api.infra.exception.ConflitoException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -19,22 +18,19 @@ public class CursoController {
     @Autowired
     private CursoRepository repository;
 
+    @Autowired
+    private CursoService cursoService;
+
     @PostMapping
     public ResponseEntity cadastrar(@RequestBody @Valid CursoCadastroDTO dados, UriComponentsBuilder uriBuilder) {
-        if (repository.countByNomeAndAtivoTrue(dados.nome()) != 0) {
-                throw new ConflitoException("Esse curso já existe!");
-            }
+        var curso = cursoService.cadastrar(dados);
+        var uri = uriBuilder.path("/cursos/{id}").buildAndExpand(curso.id()).toUri();
 
-        var curso = new Curso(dados);
-        repository.save(curso);
-
-        var uri = uriBuilder.path("/cursos/{id}").buildAndExpand(curso.getId()).toUri();
-
-        return ResponseEntity.created(uri).body(new CursoListagemDTO(curso));
+        return ResponseEntity.created(uri).body(curso);
     }
 
     @GetMapping
-    public ResponseEntity<Page<CursoListagemDTO>> listar(@PageableDefault(size = 10, sort = {"nome"}) Pageable paginacao) {
+    public ResponseEntity<Page<CursoListagemDTO>> listar(@PageableDefault(sort = {"nome"}) Pageable paginacao) {
         var page = repository.findAllByAtivoTrue(paginacao).map(CursoListagemDTO::new);
         return ResponseEntity.ok(page);
     }
@@ -51,14 +47,20 @@ public class CursoController {
     @Transactional
     public ResponseEntity desativar(@PathVariable Long id) {
         var curso = repository.getReferenceById(id);
-        curso.excluir();
+        curso.desativar();
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity detalhar(@PathVariable Long id) {
+    @PutMapping("/ativar/{id}")
+    @Transactional
+    public ResponseEntity ativar(@PathVariable Long id) {
         var curso = repository.getReferenceById(id);
+        curso.ativar();
         return ResponseEntity.ok(new CursoListagemDTO(curso));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<CursoListagemDTO> detalhar(@PathVariable Long id) {
+        return ResponseEntity.ok(cursoService.detalhar(id));
+    }
 }

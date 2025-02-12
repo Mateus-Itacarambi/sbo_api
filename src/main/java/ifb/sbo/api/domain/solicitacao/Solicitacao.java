@@ -1,11 +1,11 @@
 package ifb.sbo.api.domain.solicitacao;
 
+
 import ifb.sbo.api.domain.estudante.Estudante;
 import ifb.sbo.api.domain.professor.Professor;
 import ifb.sbo.api.domain.tema.Tema;
 import jakarta.persistence.*;
 import lombok.*;
-
 import java.time.LocalDate;
 
 @Table(name = "solicitacao")
@@ -21,6 +21,7 @@ public class Solicitacao {
     @Column(name = "id_solicitacao")
     private Long id;
     @Enumerated(EnumType.STRING)
+    @Column(name = "status_solicitacao")
     private StatusSolicitacao  status;
     @Column(name = "data_solicitacao", nullable = false)
     private LocalDate  dataSolicitacao;
@@ -32,7 +33,8 @@ public class Solicitacao {
     @ManyToOne(optional = false)
     @JoinColumn(name = "id_professor", nullable = false)
     private Professor professor;
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_estudante", nullable = false)
     private Estudante estudante;
+    private String motivo;
 }

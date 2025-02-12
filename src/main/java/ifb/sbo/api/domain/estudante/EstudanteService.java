@@ -4,37 +4,37 @@ import ifb.sbo.api.domain.curso.Curso;
 import ifb.sbo.api.domain.curso.CursoDetalhaDTO;
 import ifb.sbo.api.domain.curso.CursoRepository;
 import ifb.sbo.api.domain.tema.*;
+import ifb.sbo.api.domain.usuario.TipoUsuario;
+import ifb.sbo.api.domain.usuario.UsuarioService;
 import ifb.sbo.api.infra.exception.ConflitoException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 
 @Service
 public class EstudanteService {
-    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-
     @Autowired
     private EstudanteRepository estudanteRepository;
 
     @Autowired
     private CursoRepository cursoRepository;
 
+    @Autowired
+    private UsuarioService usuarioService;
+
     public EstudanteListagemDTO cadastrar(EstudanteCadastroDTO dados) {
         buscarCurso(dados.idCurso());
-        buscarEmail(dados.email());
+        usuarioService.buscarEmail(dados.email());
         buscarMatricula(dados.matricula());
-
-        String senhaHasheada = passwordEncoder.encode(dados.senha());
 
         var curso = cursoRepository.getReferenceById(dados.idCurso());
 
         var estudante = new Estudante(dados, curso);
-        estudante.setSenha(senhaHasheada);
+        estudante.setRole(TipoUsuario.ESTUDANTE);
         estudanteRepository.save(estudante);
 
         return mapearParaDTO(estudante);
@@ -53,12 +53,6 @@ public class EstudanteService {
     private Curso buscarCurso(Long cursoId) {
         return cursoRepository.findByIdAndAtivoTrue(cursoId)
                 .orElseThrow(() -> new EntityNotFoundException("Curso não encontrado!"));
-    }
-
-    private void buscarEmail(String email) {
-        if (estudanteRepository.countByEmail(email) != 0) {
-            throw new ConflitoException("Email já cadastrado no sistema!");
-        }
     }
 
     private void buscarMatricula(String matricula) {
@@ -106,7 +100,8 @@ public class EstudanteService {
                         estudante.getTema().getTitulo(),
                         estudante.getTema().getDescricao(),
                         estudante.getTema().getPalavrasChave(),
-                        estudante.getTema().getAreaConhecimento()) : null
+                        estudante.getTema().getAreaConhecimento(),
+                        estudante.getTema().getStatus().getDescricao()) : null
         );
     }
 

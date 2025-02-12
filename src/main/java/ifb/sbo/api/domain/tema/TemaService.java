@@ -4,14 +4,19 @@ package ifb.sbo.api.domain.tema;
 import ifb.sbo.api.domain.curso.CursoDetalhaDTO;
 import ifb.sbo.api.domain.estudante.*;
 import ifb.sbo.api.domain.professor.*;
-import ifb.sbo.api.domain.usuario.Usuario;
-import ifb.sbo.api.domain.usuario.UsuarioRepository;
+import ifb.sbo.api.domain.usuario.UsuarioService;
 import ifb.sbo.api.infra.exception.ConflitoException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,33 +32,40 @@ public class TemaService {
     private EstudanteRepository estudanteRepository;
 
     @Autowired
-    private UsuarioRepository usuarioRepository;
-
-    @Autowired
     private ProfessorRepository professorRepository;
 
     private final EstudanteService estudanteService;
 
     private final ProfessorService professorService;
 
-    public TemaService(EstudanteService estudanteService, ProfessorService professorService) {
+    private final UsuarioService usuarioService;
+
+    public TemaService(EstudanteService estudanteService, ProfessorService professorService, UsuarioService usuarioService) {
         this.estudanteService = estudanteService;
         this.professorService = professorService;
+        this.usuarioService = usuarioService;
     }
 
     public EstudanteListagemDTO criarTemaEstudante(Long estudanteId, TemaCadastroDTO dados) {
         buscarTemaTitulo(dados.titulo());
         var estudante = estudanteService.buscarEstudante(estudanteId);
 
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+
+        if (!estudante.getEmail().equals(username)) {
+            throw new AccessDeniedException("Você não tem permissão para cadastrar este tema!");
+        }
+
         estudanteService.verificarTemaEstudante(estudanteId);
 
         var tema = new Tema(dados);
-        tema.setStatus("Reservado");
+        tema.setStatus(StatusTema.RESERVADO);
 
         tema.getEstudantes().add(estudante);
-        estudante.setTema(tema);
-
         temaRepository.save(tema);
+
+        estudante.setTema(tema);
         estudanteRepository.save(estudante);
 
         return estudanteService.detalharEstudante(estudanteId);
@@ -64,7 +76,7 @@ public class TemaService {
         var professor = professorService.buscarProfessor(professorId);
 
         var tema = new Tema(dados);
-        tema.setStatus("Disponível");
+        tema.setStatus(StatusTema.DISPONIVEL);
 
         tema.setProfessor(professor);
 
@@ -79,12 +91,17 @@ public class TemaService {
                 .map(this::mapearParaDTO);
     }
 
+    public Page<TemaListagemDTO> listarTemasPaginadosPorProfessor(Long professorId, @PageableDefault(size = 20, sort = {"nome"}) Pageable paginacao) {
+        return temaRepository.findAllByProfessor_Id(professorId, paginacao)
+                .map(this::mapearParaDTO);
+    }
+
     @Transactional
     public TemaListagemDTO atualizarTema(Long temaId, Long usuarioId, TemaAtualizaDTO dados) {
         System.out.println("ID TEMA: " + temaId);
         var tema = buscarTema(temaId);
 
-        verificarUsuario(usuarioId, tema);
+        usuarioService.verificarUsuarioTema(usuarioId, tema);
 
         buscarTemaTitulo(dados.titulo());
 
@@ -98,11 +115,17 @@ public class TemaService {
     public void adicionarEstudanteAoTema(Long temaId, Long usuarioId, String matricula) {
         var tema = buscarTema(temaId);
 
+        if (tema.getStatus().equals(StatusTema.CONCLUIDO)) {
+            throw new ConflitoException("Este tema já foi concluído.");
+        } else if (tema.getStatus().equals(StatusTema.DISPONIVEL)) {
+            throw new ConflitoException("Não é possível adicionar estudante ao tema.");
+        }
+
         if (tema.getEstudantes().size() >= 2) {
             throw new ConflitoException("Este tema já possui o número máximo de estudantes (2).");
         }
 
-        verificarUsuario(usuarioId, tema);
+        usuarioService.verificarUsuarioTema(usuarioId, tema);
 
         var estudante = estudanteService.buscarEstudanteMatricula(matricula);
 
@@ -118,9 +141,13 @@ public class TemaService {
     public void removerEstudanteDoTema(Long temaId, Long usuarioId, Long estudanteId) {
         Tema tema = buscarTema(temaId);
 
-        verificarUsuario(usuarioId, tema);
+        usuarioService.verificarUsuarioTema(usuarioId, tema);
 
         Estudante estudante = estudanteService.buscarEstudante(estudanteId);
+
+        if (tema.getEstudantes().size() == 1) {
+            throw new ConflitoException("Não é possível remover estudante do tema.");
+        }
 
         if (tema.getEstudantes().stream()
                 .noneMatch(e -> e.getId().equals(estudante.getId()))) {
@@ -138,7 +165,24 @@ public class TemaService {
 
     public void deletarTema(Long temaId, Long usuarioId) {
         var tema = buscarTema(temaId);
-        verificarUsuario(usuarioId, tema);
+        var usuario = usuarioService.buscarUsuario(usuarioId);
+
+        if (tema.getStatus().equals(StatusTema.CONCLUIDO)){
+            throw new ConflitoException("Este tema está concluído.");
+        }
+
+        usuarioService.verificarUsuarioTema(usuarioId, tema);
+
+        if (usuario instanceof Estudante) {
+            if (tema.getProfessor() != null) {
+                throw new ConflitoException("Este tema está associado a um professor. Cancele a solicitação associada a este tema.");
+            }
+        } else if (usuario instanceof Professor) {
+            if (!tema.getEstudantes().isEmpty()) {
+                throw new ConflitoException("Este tema está associado a um ou mais estudates. Cancele a solicitação associada a este tema.");
+            }
+        }
+
         temaRepository.delete(tema);
     }
 
@@ -164,7 +208,7 @@ public class TemaService {
                 tema.getDescricao(),
                 tema.getPalavrasChave(),
                 tema.getAreaConhecimento(),
-                tema.getStatus(),
+                tema.getStatus().getDescricao(),
                 tema.getProfessor() != null ? new ProfessorDetalhaDTO(
                         tema.getProfessor().getId(),
                         tema.getProfessor().getNome()
@@ -177,41 +221,14 @@ public class TemaService {
                 .orElseThrow(() -> new EntityNotFoundException("Tema não encontrado!"));
     }
 
-    public Tema buscarTemaEstudante(Long temaId) {
-        return temaRepository.findByIdWithEstudantes(temaId)
-                .orElseThrow(() -> new EntityNotFoundException("Tema não encontrado!"));
+    public Tema buscarTemaDisponivel(Long temaId) {
+        return temaRepository.findByIdAndStatus(temaId, StatusTema.DISPONIVEL)
+                .orElseThrow(() -> new ConflitoException("Este tema não está disponível!"));
     }
 
     public void buscarTemaTitulo(String titulo) {
-        if (temaRepository.countByTituloAndAtivoTrue(titulo) != 0) {
+        if (temaRepository.countByTitulo(titulo) != 0) {
             throw new ConflitoException("Esse tema já existe!");
-        }
-    }
-
-    public Usuario buscarUsuario(Long usuarioId) {
-        return usuarioRepository.findById(usuarioId)
-                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
-    }
-
-    public void verificarUsuario(Long usuarioId, Tema tema) {
-        var usuario = buscarUsuario(usuarioId);
-
-        if (usuario instanceof Professor professor) {
-            if (tema.getProfessor() == null || !tema.getProfessor().getId().equals(professor.getId())) {
-                throw new ConflitoException("Permissão negada: Você não é o criador deste tema.");
-            }
-        } else if (usuario instanceof Estudante estudante) {
-            if (tema.getEstudantes() == null || tema.getEstudantes().stream().noneMatch(e -> e.getId().equals(estudante.getId()))) {
-                throw new ConflitoException("Permissão negada: Você não é o criador deste tema.");
-            }
-        } else {
-            throw new EntityNotFoundException("Tipo de usuário inválido.");
-        }
-    }
-
-    private void buscarEstudante(Tema tema, Long estudanteId) {
-        if (!tema.getEstudantes().stream().anyMatch(estudante -> estudante.getId().equals(estudanteId))) {
-            throw new IllegalStateException("O tema não pertence ao estudante informado.");
         }
     }
 }

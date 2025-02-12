@@ -5,4 +5,5 @@ public record TemaDetalhaDTO(
         String titulo,
         String descricao,
         String palavrasChave,
-        String areaConchecimento) {}
+        String areaConchecimento,
+        String statusTema) {}

@@ -1,12 +1,14 @@
 package ifb.sbo.api.domain.estudante;
 
 import ifb.sbo.api.domain.curso.Curso;
+import ifb.sbo.api.domain.tema.Tema;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface EstudanteRepository extends JpaRepository<Estudante, Long> {
@@ -21,4 +23,8 @@ public interface EstudanteRepository extends JpaRepository<Estudante, Long> {
     Optional<Estudante> findByIdAndAtivoTrue(Long estudanteId);
 
     Optional<Estudante> findByMatriculaAndAtivoTrue(String matricula);
+
+    List<Estudante> findAllByTema(Tema tema);
+
+    Optional<Estudante> findByEmailAndAtivoTrue(String email);
 }

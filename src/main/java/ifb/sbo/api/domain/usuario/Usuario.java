@@ -5,8 +5,14 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.time.LocalDate;
+import java.util.Collection;
+import java.util.Collections;
 
 @Table(name = "usuario")
 @Entity(name = "Usuario")
@@ -15,7 +21,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 @Inheritance(strategy = InheritanceType.JOINED)
-public abstract class Usuario {
+public class Usuario implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_usuario")
@@ -29,15 +35,82 @@ public abstract class Usuario {
     protected String senha;
     @Column(name = "data_cadastro")
     private LocalDate dataCadastro;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tipo")
+    private TipoUsuario role;
     protected Boolean ativo;
 
     public Usuario(String nome, LocalDate dataNascimento, String genero, String email, String senha) {
+        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         this.nome = nome;
         this.dataNascimento = dataNascimento;
         this.genero = genero;
         this.email = email;
-        this.senha = senha;
+        this.senha = passwordEncoder.encode(senha);
         this.dataCadastro = LocalDate.now();
         this.ativo = true;
     }
+
+    public void atualizarInformacoes(UsuarioAtualizaDTO dados) {
+        if (dados.nome() != null) {
+            this.nome = dados.nome();
+        }
+
+        if (dados.dataNascimento() != null) {
+            this.dataNascimento = dados.dataNascimento();
+        }
+
+        if (dados.genero() != null) {
+            this.genero = dados.genero();
+        }
+
+        if (dados.email() != null) {
+            this.email = dados.email();
+        }
+
+        if (dados.senha() != null) {
+            BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+            this.senha = passwordEncoder.encode(dados.senha());
+        }
+    }
+
+    public void desativar() {
+        this.ativo = false;
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role));
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
+
+    @Override
+    public String getPassword() {
+        return senha;
+    }
+
+    @Override
+    public String getUsername() {
+        return email;
+    }
+
 }

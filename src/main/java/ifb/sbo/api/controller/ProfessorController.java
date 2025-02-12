@@ -1,17 +1,13 @@
 package ifb.sbo.api.controller;
 
 
-import ifb.sbo.api.domain.estudante.EstudanteListagemDTO;
 import ifb.sbo.api.domain.formacao.*;
 import ifb.sbo.api.domain.professor.*;
-import ifb.sbo.api.domain.tema.TemaCadastroDTO;
-import ifb.sbo.api.infra.exception.ConflitoException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -19,8 +15,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 @RestController
 @RequestMapping("professores")
 public class ProfessorController {
-    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-
     @Autowired
     private ProfessorRepository professorRepository;
 
@@ -33,19 +27,10 @@ public class ProfessorController {
 
     @PostMapping
     public ResponseEntity cadastrar(@RequestBody @Valid ProfessorCadastroDTO dados, UriComponentsBuilder uriBuilder) {
-        if(professorRepository.countByEmail(dados.email()) != 0) {
-            throw new ConflitoException("Email já cadastrado no sistema!");
-        }
+        var professor = professorService.cadastrar(dados);
+        var uri = uriBuilder.path("/professores/{id}").buildAndExpand(professor.id()).toUri();
 
-        String senhaHasheada = passwordEncoder.encode(dados.senha());
-
-        var professor = new Professor(dados);
-        professor.setSenha(senhaHasheada);
-        professorRepository.save(professor);
-
-        var uri = uriBuilder.path("/professores/{id}").buildAndExpand(professor.getId()).toUri();
-
-        return ResponseEntity.created(uri).body(professorService.detalharProfessor(professor.getId()));
+        return ResponseEntity.created(uri).body(professor);
     }
 
     @GetMapping
@@ -129,13 +114,4 @@ public class ProfessorController {
 
         return ResponseEntity.ok(new FormacaoListagemDTO(formacao));
     }
-
-//    @PostMapping("/{professorId}/cadastrarTema")
-//    public ResponseEntity<ProfessorListagemDTO> cadastrarTema(@PathVariable Long professorId, @RequestBody TemaCadastroDTO dados, UriComponentsBuilder uriBuilder) {
-//        professorService.cadastrarTema(professorId, dados);
-//
-//        var uri = uriBuilder.path("/professores/{id}").buildAndExpand(professorId).toUri();
-//
-//        return ResponseEntity.created(uri).body(professorService.detalharProfessor(professorId));
-//    }
 }

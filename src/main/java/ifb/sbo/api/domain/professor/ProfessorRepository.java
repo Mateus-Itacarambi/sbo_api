@@ -9,7 +9,7 @@ import java.util.Optional;
 public interface ProfessorRepository extends JpaRepository<Professor, Long> {
     Page<Professor> findAllByAtivoTrue(Pageable paginacao);
 
-    int countByEmail(String email);
+    int countByIdLattes(String idLattes);
 
     Optional<Professor> findByIdAndAtivoTrue(Long professorId);
 }

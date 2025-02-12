@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,7 +59,8 @@ public class Estudante extends Usuario {
         }
 
         if (dados.senha() != null) {
-            super.senha = dados.senha();
+            BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+            super.senha = passwordEncoder.encode(dados.senha());
         }
 
         if (dados.matricula() != null) {
@@ -68,10 +70,6 @@ public class Estudante extends Usuario {
         if (dados.semestre() != null) {
             this.semestre = dados.semestre();
         }
-    }
-
-    public Curso getCurso() {
-        return curso;
     }
 
     public void excluir() {

@@ -7,7 +7,7 @@ public enum Disponibilidade {
     DISPONIVEL("Disponível"),
     INDISPONIVEL("Indisponível");
 
-    private String descricao;
+    private final String descricao;
 
     Disponibilidade(String descricao) {
         this.descricao = descricao;

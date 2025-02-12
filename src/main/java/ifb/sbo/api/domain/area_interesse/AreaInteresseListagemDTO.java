@@ -1,5 +1,6 @@
 package ifb.sbo.api.domain.area_interesse;
 
+
 public record AreaInteresseListagemDTO(
         Long id,
         String nome) {
