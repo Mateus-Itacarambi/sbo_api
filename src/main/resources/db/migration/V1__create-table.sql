@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS curso (
     nome VARCHAR(200) NOT NULL,
     sigla VARCHAR(200) NOT NULL,
     descricao VARCHAR(200) NOT NULL,
+    semestres INT NOT NULL,
     ativo BOOLEAN
     );
 

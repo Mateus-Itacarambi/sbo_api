@@ -11,9 +11,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
-
 @RestController
 @RequestMapping("cursos")
+@CrossOrigin("http://localhost:3000/")
 public class CursoController {
     @Autowired
     private CursoRepository repository;

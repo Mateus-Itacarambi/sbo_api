@@ -27,6 +27,10 @@ public class EstudanteService {
     private UsuarioService usuarioService;
 
     public EstudanteListagemDTO cadastrar(EstudanteCadastroDTO dados) {
+        if (!dados.isMaiorDeIdade()) {
+            throw new ConflitoException("É necessário ter pelo menos 18 anos para se cadastrar!");
+        }
+
         buscarCurso(dados.idCurso());
         usuarioService.buscarEmail(dados.email());
         buscarMatricula(dados.matricula());

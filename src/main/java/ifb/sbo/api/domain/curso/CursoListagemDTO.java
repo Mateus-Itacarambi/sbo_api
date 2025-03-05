@@ -4,10 +4,11 @@ public record CursoListagemDTO(
         Long id,
         String nome,
         String sigla,
-        String descricao) {
+        String descricao,
+        Integer semestres) {
 
     public CursoListagemDTO(Curso curso) {
-        this(curso.getId(), curso.getNome(), curso.getSigla(), curso.getDescricao());
+        this(curso.getId(), curso.getNome(), curso.getSigla(), curso.getDescricao(), curso.getSemestres());
     }
 }
 

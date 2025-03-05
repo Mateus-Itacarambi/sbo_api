@@ -14,6 +14,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfigurationSource;
+
+import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
@@ -21,21 +24,25 @@ public class SecurityConfig {
     @Autowired
     private SecurityFilter securityFilter;
 
+    @Autowired
+    CorsConfig corsConfig;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return  http
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/login").permitAll()
+                        .requestMatchers(HttpMethod.OPTIONS).permitAll()
+                        .requestMatchers("/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/estudantes").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/cursos").permitAll()
                         .requestMatchers("/temas/professor/**").hasRole("PROFESSOR")
                         .requestMatchers("/temas/estudante/**").hasRole("ESTUDANTE")
                         .requestMatchers("/temas/**").authenticated()
                         .requestMatchers("/solicitacoes/estudante/**").hasRole("ESTUDANTE")
                         .requestMatchers("/professores/**").hasRole("PROFESSOR")
                         .requestMatchers(HttpMethod.GET, "/areasInteresse").hasRole("PROFESSOR")
-                        .requestMatchers(HttpMethod.GET, "/cursos/**").authenticated()
                         .requestMatchers("/areasInteresse/**").hasRole("ADMINISTRADOR")
                         .requestMatchers("/cursos").hasRole("ADMINISTRADOR")
                         .requestMatchers("/**").hasRole("ADMINISTRADOR")

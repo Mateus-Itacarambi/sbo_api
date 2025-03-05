@@ -4,6 +4,7 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTCreationException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
+import ifb.sbo.api.domain.estudante.Estudante;
 import ifb.sbo.api.domain.usuario.Usuario;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,8 @@ public class TokenService {
             return JWT.create()
                     .withIssuer("API SBO")
                     .withSubject(usuario.getEmail())
+                    .withClaim("role", String.valueOf(usuario.getRole()))
+                    .withClaim("nome", usuario.getNome())
                     .withExpiresAt(dataExpiracao())
                     .sign(algoritmo);
         } catch (JWTCreationException exception) {
@@ -44,6 +47,6 @@ public class TokenService {
     }
 
     private Instant dataExpiracao() {
-        return LocalDateTime.now().plusYears(1).toInstant(ZoneOffset.of("-03:00"));
+        return LocalDateTime.now().plusSeconds(10).toInstant(ZoneOffset.of("-03:00"));
     }
 }

@@ -8,4 +8,5 @@ public record CursoAtualizaDTO(
         Long id,
         String nome,
         String sigla,
-        String descricao) {}
+        String descricao,
+        Integer semestres) {}

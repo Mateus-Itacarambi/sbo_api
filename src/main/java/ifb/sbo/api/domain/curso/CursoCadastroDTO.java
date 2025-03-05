@@ -8,4 +8,6 @@ public record CursoCadastroDTO(
         @NotBlank
         String sigla,
         @NotBlank
-        String descricao) {}
+        String descricao,
+        @NotBlank
+        Integer semestres) {}

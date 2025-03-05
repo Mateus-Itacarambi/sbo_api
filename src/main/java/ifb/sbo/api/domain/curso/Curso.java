@@ -26,6 +26,7 @@ public class Curso {
     private String nome;
     private String sigla;
     private String descricao;
+    private Integer semestres;
     private Boolean ativo;
     @OneToMany(mappedBy = "curso", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Estudante> estudantes = new ArrayList<>();
@@ -36,6 +37,7 @@ public class Curso {
         this.nome = dados.nome();
         this.sigla = dados.sigla();
         this.descricao = dados.descricao();
+        this.semestres = dados.semestres();
         this.ativo = true;
     }
 
@@ -48,6 +50,9 @@ public class Curso {
         }
         if (dados.descricao() != null) {
             this.descricao = dados.descricao();
+        }
+        if (dados.semestres() != null) {
+            this.semestres = dados.semestres();
         }
     }
 

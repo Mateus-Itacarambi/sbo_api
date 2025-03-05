@@ -3,12 +3,13 @@ package ifb.sbo.api.domain.estudante;
 import jakarta.validation.constraints.*;
 
 import java.time.LocalDate;
+import java.time.Period;
 
 public record EstudanteCadastroDTO(
         @NotBlank
         String nome,
         @NotNull
-        @Past
+        @Past()
         LocalDate dataNascimento,
         @NotBlank
         String genero,
@@ -24,4 +25,9 @@ public record EstudanteCadastroDTO(
         Integer semestre,
         @NotNull
         @Min(1)
-        Long idCurso) {}
+        Long idCurso) {
+
+        public boolean isMaiorDeIdade() {
+                return Period.between(this.dataNascimento, LocalDate.now()).getYears() >= 18;
+        }
+}
