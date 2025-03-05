@@ -40,10 +40,12 @@ CREATE TABLE IF NOT EXISTS tema (
     );
 
 CREATE TABLE IF NOT EXISTS estudante (
-    semestre INT NOT NULL,
+    semestre INT,
+--     semestre INT NOT NULL,
     matricula VARCHAR(45) NOT NULL,
     id_usuario INT PRIMARY KEY NOT NULL,
-    id_curso INT NOT NULL,
+    id_curso INT,
+--     id_curso INT NOT NULL,
     id_tema INT,
     FOREIGN KEY (id_usuario) REFERENCES usuario (id_usuario),
     FOREIGN KEY (id_curso) REFERENCES curso (id_curso),

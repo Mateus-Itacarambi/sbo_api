@@ -31,13 +31,14 @@ public class EstudanteService {
             throw new ConflitoException("É necessário ter pelo menos 18 anos para se cadastrar!");
         }
 
-        buscarCurso(dados.idCurso());
+//        buscarCurso(dados.idCurso());
         usuarioService.buscarEmail(dados.email());
         buscarMatricula(dados.matricula());
 
-        var curso = cursoRepository.getReferenceById(dados.idCurso());
+//        var curso = cursoRepository.getReferenceById(dados.idCurso());
 
-        var estudante = new Estudante(dados, curso);
+//        var estudante = new Estudante(dados, curso);
+        var estudante = new Estudante(dados);
         estudante.setRole(TipoUsuario.ESTUDANTE);
         estudanteRepository.save(estudante);
 
@@ -96,10 +97,10 @@ public class EstudanteService {
                 estudante.getGenero(),
                 estudante.getEmail(),
                 estudante.getMatricula(),
-                estudante.getSemestre(),
-                new CursoDetalhaDTO(
+                estudante.getTema() != null ? estudante.getSemestre() : null,
+                estudante.getTema() != null ? new CursoDetalhaDTO(
                         estudante.getCurso().getNome()
-                ),
+                ) : null,
                 estudante.getTema() != null ? new TemaDetalhaDTO(
                         estudante.getTema().getTitulo(),
                         estudante.getTema().getDescricao(),

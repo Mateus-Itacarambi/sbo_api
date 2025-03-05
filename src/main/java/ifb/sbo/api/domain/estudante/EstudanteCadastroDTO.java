@@ -19,13 +19,14 @@ public record EstudanteCadastroDTO(
         @NotBlank
         String senha,
         @NotBlank
-        String matricula,
-        @NotNull
-        @Min(1)
-        Integer semestre,
-        @NotNull
-        @Min(1)
-        Long idCurso) {
+        String matricula
+//        @NotNull
+//        @Min(1)
+//        Integer semestre,
+//        @NotNull
+//        @Min(1)
+//        Long idCurso
+) {
 
         public boolean isMaiorDeIdade() {
                 return Period.between(this.dataNascimento, LocalDate.now()).getYears() >= 18;
