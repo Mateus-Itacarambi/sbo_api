@@ -9,7 +9,6 @@ public record EstudanteCadastroDTO(
         @NotBlank
         String nome,
         @NotNull
-        @Past()
         LocalDate dataNascimento,
         @NotBlank
         String genero,

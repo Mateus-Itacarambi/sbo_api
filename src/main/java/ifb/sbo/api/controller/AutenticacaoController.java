@@ -56,8 +56,4 @@ public class AutenticacaoController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuário não encontrado.");
         }
     }
-
-
-
-
 }
