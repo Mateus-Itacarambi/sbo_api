@@ -13,6 +13,7 @@ public record EstudanteListagemDTO(
         LocalDate dataNascimento,
         String genero,
         String email,
+        String role,
         String matricula,
         Integer semestre,
         CursoDetalhaDTO curso,

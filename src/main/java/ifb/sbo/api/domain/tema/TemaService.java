@@ -198,6 +198,7 @@ public class TemaService {
                         estudante.getMatricula(),
                         estudante.getSemestre(),
                         new CursoDetalhaDTO(
+                                estudante.getCurso().getId(),
                                 estudante.getCurso().getNome()
                         )
                 ))

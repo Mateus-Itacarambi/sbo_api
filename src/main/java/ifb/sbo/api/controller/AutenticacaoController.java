@@ -1,15 +1,19 @@
 package ifb.sbo.api.controller;
 
 import ifb.sbo.api.domain.estudante.Estudante;
+import ifb.sbo.api.domain.estudante.EstudanteService;
 import ifb.sbo.api.domain.professor.Professor;
 import ifb.sbo.api.domain.usuario.DadosAutenticacao;
 import ifb.sbo.api.domain.usuario.Usuario;
 import ifb.sbo.api.domain.usuario.UsuarioRepository;
 import ifb.sbo.api.infra.security.DadosTokenJWT;
 import ifb.sbo.api.infra.security.TokenService;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -18,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Optional;
 
 @RestController
-@RequestMapping
+@RequestMapping("/auth")
 public class AutenticacaoController {
     @Autowired
     private AuthenticationManager manager;
@@ -29,31 +33,67 @@ public class AutenticacaoController {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
-    @PostMapping("/auth/login")
-    public ResponseEntity login(@RequestBody @Valid DadosAutenticacao dados) {
+    @Autowired
+    private EstudanteService estudanteService;
+
+    @PostMapping("/login")
+    public ResponseEntity login(@RequestBody @Valid DadosAutenticacao dados, HttpServletResponse response) {
         var token = new UsernamePasswordAuthenticationToken(dados.email(), dados.senha());
         var authentication = manager.authenticate(token);
 
         var tokenJWT = tokenService.gerarToken((Usuario) authentication.getPrincipal());
 
-        return ResponseEntity.ok(new DadosTokenJWT(tokenJWT));
+        ResponseCookie cookie = ResponseCookie.from("token", tokenJWT)
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("Lax")
+                .path("/")
+                .maxAge(2 * 60 * 60)
+                .build();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
+//        return ResponseEntity.ok(new DadosTokenJWT(tokenJWT));
+
+        return ResponseEntity.ok().body("Login bem-sucedido");
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletResponse response) {
+        ResponseCookie cookie = ResponseCookie.from("token", "")
+                .path("/")
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("Lax")
+                .maxAge(0)
+                .build();
+
+        response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
+        return ResponseEntity.ok("Logout realizado com sucesso.");
     }
 
     @GetMapping("/me")
-    public ResponseEntity<?> getUserInfo(@RequestHeader("Authorization") String authHeader) {
-        String token = authHeader.replace("Bearer ", "");
-        String email = tokenService.getSubject(token); // Verifique o usuário através do email
+    public ResponseEntity<?> getUserInfo(@CookieValue(name = "token", required = false) String token) {
+        if (token == null || token.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token ausente.");
+        }
 
-        Usuario usuario = usuarioRepository.findByEmailAndAtivoTrue(email);
+        try {
+            String email = tokenService.getSubject(token);
 
-        if (usuario instanceof Estudante) {
-            Estudante estudante = (Estudante) usuario;
-            return ResponseEntity.ok(estudante);
-        } else if (usuario instanceof Professor) {
-            Professor professor = (Professor) usuario;
-            return ResponseEntity.ok(professor);
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuário não encontrado.");
+            Usuario usuario = usuarioRepository.findByEmailAndAtivoTrue(email);
+
+            if (usuario instanceof Estudante estudante) {
+                return ResponseEntity.ok(estudanteService.detalharEstudante(estudante.getId()));
+            } else if (usuario instanceof Professor professor) {
+                return ResponseEntity.ok(professor);
+            } else {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuário não encontrado.");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token inválido ou expirado.");
         }
     }
+
 }

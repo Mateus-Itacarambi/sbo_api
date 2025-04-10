@@ -34,19 +34,12 @@ public class Estudante extends Usuario {
     @OneToMany(mappedBy = "estudante", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Solicitacao> solicitacoes = new ArrayList<>();
 
-    public Estudante(EstudanteCadastroDTO dados) {
+    public Estudante(EstudanteCadastroDTO dados, Curso curso) {
         super(dados.nome(), dados.dataNascimento(), dados.genero(), dados.email(), dados.senha());
         this.matricula = dados.matricula();
-//        this.semestre = dados.semestre();
-//        this.curso = curso;
+        this.semestre = dados.semestre();
+        this.curso = curso;
     }
-
-//    public Estudante(EstudanteCadastroDTO dados, Curso curso) {
-//        super(dados.nome(), dados.dataNascimento(), dados.genero(), dados.email(), dados.senha());
-//        this.matricula = dados.matricula();
-//        this.semestre = dados.semestre();
-//        this.curso = curso;
-//    }
 
     public void atualizarInformacoes(EstudanteAtualizaDTO dados) {
         if (dados.nome() != null) {

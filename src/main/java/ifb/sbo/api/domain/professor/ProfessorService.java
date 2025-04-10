@@ -166,6 +166,7 @@ public class ProfessorService {
         List<CursoDetalhaDTO> cursosDTO = professor.getCursos()
                 .stream()
                 .map(curso -> new CursoDetalhaDTO(
+                        curso.getId(),
                         curso.getNome())).toList();
 
         List<AreaInteresseDetalhaDTO> areasInteresseDTO = professor.getAreasInteresse()
@@ -186,6 +187,7 @@ public class ProfessorService {
         List<TemaDetalhaDTO> temasDTO = professor.getTemas()
                 .stream()
                 .map(tema -> new TemaDetalhaDTO(
+                        tema.getId(),
                         tema.getTitulo(),
                         tema.getDescricao(),
                         tema.getPalavrasChave(),

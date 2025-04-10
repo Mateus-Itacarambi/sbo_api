@@ -1,6 +1,7 @@
 package ifb.sbo.api.domain.curso;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 public record CursoCadastroDTO(
         @NotBlank
@@ -9,5 +10,5 @@ public record CursoCadastroDTO(
         String sigla,
         @NotBlank
         String descricao,
-        @NotBlank
+        @NotNull
         Integer semestres) {}
