@@ -41,7 +41,7 @@ public class Estudante extends Usuario {
         this.curso = curso;
     }
 
-    public void atualizarInformacoes(EstudanteAtualizaDTO dados) {
+    public void atualizarInformacoes(EstudanteAtualizaDTO dados, Curso curso) {
         if (dados.nome() != null) {
             super.nome = dados.nome();
         }
@@ -65,6 +65,10 @@ public class Estudante extends Usuario {
 
         if (dados.matricula() != null) {
             this.matricula = dados.matricula();
+        }
+
+        if (dados.curso() != null) {
+            this.curso = curso;
         }
 
         if (dados.semestre() != null) {

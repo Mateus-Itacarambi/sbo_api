@@ -1,6 +1,8 @@
 package ifb.sbo.api.controller;
 
+import ifb.sbo.api.domain.curso.CursoService;
 import ifb.sbo.api.domain.estudante.*;
+import ifb.sbo.api.infra.exception.ConflitoException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -36,9 +38,8 @@ public class EstudanteController {
     @PutMapping
     @Transactional
     public ResponseEntity atualizar(@RequestBody @Valid EstudanteAtualizaDTO dados) {
-        var estudante = repository.getReferenceById(dados.id());
-        estudante.atualizarInformacoes(dados);
-        return ResponseEntity.ok(estudanteService.detalharEstudante(estudante.getId()));
+        var estudante = estudanteService.atualizar(dados);
+        return ResponseEntity.ok(estudante);
     }
 
     @DeleteMapping("/{id}")

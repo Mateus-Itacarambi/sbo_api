@@ -3,6 +3,7 @@ package ifb.sbo.api.domain.estudante;
 import ifb.sbo.api.domain.curso.Curso;
 import ifb.sbo.api.domain.curso.CursoDetalhaDTO;
 import ifb.sbo.api.domain.curso.CursoRepository;
+import ifb.sbo.api.domain.curso.CursoService;
 import ifb.sbo.api.domain.tema.*;
 import ifb.sbo.api.domain.usuario.TipoUsuario;
 import ifb.sbo.api.domain.usuario.UsuarioService;
@@ -13,6 +14,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Service;
+
+import java.util.Objects;
 
 
 @Service
@@ -26,9 +29,12 @@ public class EstudanteService {
     @Autowired
     private UsuarioService usuarioService;
 
+    @Autowired
+    private CursoService cursoService;
+
     public EstudanteListagemDTO cadastrar(EstudanteCadastroDTO dados) {
         if (!dados.isMaiorDeIdade()) {
-            throw new ConflitoException("É necessário ter pelo menos 18 anos para se cadastrar!");
+            throw new ConflitoException("É necessário ter pelo menos 18 anos!");
         }
 
         buscarCurso(dados.idCurso());
@@ -41,6 +47,26 @@ public class EstudanteService {
 //        var estudante = new Estudante(dados);
         estudante.setRole(TipoUsuario.ESTUDANTE);
         estudanteRepository.save(estudante);
+
+        return mapearParaDTO(estudante);
+    }
+
+    public EstudanteListagemDTO atualizar(EstudanteAtualizaDTO dados) {
+        var estudante = estudanteRepository.getReferenceById(dados.id());
+        if (!dados.isMaiorDeIdade()) {
+            throw new ConflitoException("É necessário ter pelo menos 18 anos!");
+        }
+
+        if (!Objects.equals(estudante.getEmail(), dados.email())) {
+            usuarioService.buscarEmail(dados.email());
+        }
+
+        if (!Objects.equals(estudante.getMatricula(), dados.matricula())) {
+            buscarMatricula(dados.matricula());
+        }
+
+        var curso = cursoService.buscarCurso(dados.curso());
+        estudante.atualizarInformacoes(dados, curso);
 
         return mapearParaDTO(estudante);
     }
