@@ -4,6 +4,7 @@ package ifb.sbo.api.domain.tema;
 import ifb.sbo.api.domain.curso.CursoDetalhaDTO;
 import ifb.sbo.api.domain.estudante.*;
 import ifb.sbo.api.domain.professor.*;
+import ifb.sbo.api.domain.usuario.Usuario;
 import ifb.sbo.api.domain.usuario.UsuarioService;
 import ifb.sbo.api.infra.exception.ConflitoException;
 import jakarta.persistence.EntityNotFoundException;
@@ -49,13 +50,6 @@ public class TemaService {
     public EstudanteListagemDTO criarTemaEstudante(Long estudanteId, TemaCadastroDTO dados) {
         buscarTemaTitulo(dados.titulo());
         var estudante = estudanteService.buscarEstudante(estudanteId);
-
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = authentication.getName();
-
-        if (!estudante.getEmail().equals(username)) {
-            throw new AccessDeniedException("Você não tem permissão para cadastrar este tema!");
-        }
 
         estudanteService.verificarTemaEstudante(estudanteId);
 
@@ -208,7 +202,6 @@ public class TemaService {
                 tema.getTitulo(),
                 tema.getDescricao(),
                 tema.getPalavrasChave(),
-                tema.getAreaConhecimento(),
                 tema.getStatus().getDescricao(),
                 tema.getProfessor() != null ? new ProfessorDetalhaDTO(
                         tema.getProfessor().getId(),

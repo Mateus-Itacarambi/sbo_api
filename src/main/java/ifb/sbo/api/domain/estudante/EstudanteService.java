@@ -4,6 +4,7 @@ import ifb.sbo.api.domain.curso.Curso;
 import ifb.sbo.api.domain.curso.CursoDetalhaDTO;
 import ifb.sbo.api.domain.curso.CursoRepository;
 import ifb.sbo.api.domain.curso.CursoService;
+import ifb.sbo.api.domain.professor.ProfessorDetalhaDTO;
 import ifb.sbo.api.domain.tema.*;
 import ifb.sbo.api.domain.usuario.TipoUsuario;
 import ifb.sbo.api.domain.usuario.UsuarioService;
@@ -134,8 +135,16 @@ public class EstudanteService {
                         estudante.getTema().getTitulo(),
                         estudante.getTema().getDescricao(),
                         estudante.getTema().getPalavrasChave(),
-                        estudante.getTema().getAreaConhecimento(),
-                        estudante.getTema().getStatus().getDescricao()) : null
+                        estudante.getTema().getStatus().getDescricao(),
+                        estudante.getTema().getEstudantes().stream()
+                                .map(estudante1 -> new EstudanteDetalhaDTO(
+                                        estudante1.getId(),
+                                        estudante1.getNome()))
+                                .toList(),
+                        estudante.getTema().getProfessor() != null ? new ProfessorDetalhaDTO(
+                                estudante.getTema().getProfessor().getId(),
+                                estudante.getTema().getProfessor().getNome()
+                        ) : null) : null
         );
     }
 

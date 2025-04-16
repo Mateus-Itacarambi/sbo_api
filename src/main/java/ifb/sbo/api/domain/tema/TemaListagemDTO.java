@@ -9,7 +9,6 @@ public record TemaListagemDTO(
         String titulo,
         String descricao,
         String palavrasChave,
-        String areaConhecimento,
         String status,
         ProfessorDetalhaDTO professor,
         List<EstudanteListagemTemaDTO> estudante) {}

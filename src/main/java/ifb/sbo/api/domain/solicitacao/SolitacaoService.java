@@ -326,7 +326,6 @@ public class SolitacaoService {
                         solicitacao.getTema().getTitulo(),
                         solicitacao.getTema().getDescricao(),
                         solicitacao.getTema().getPalavrasChave(),
-                        solicitacao.getTema().getAreaConhecimento(),
                         estudantesDTO
                 ),
                 new ProfessorDetalhaDTO(

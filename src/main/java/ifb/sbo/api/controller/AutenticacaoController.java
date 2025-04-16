@@ -3,9 +3,7 @@ package ifb.sbo.api.controller;
 import ifb.sbo.api.domain.estudante.Estudante;
 import ifb.sbo.api.domain.estudante.EstudanteService;
 import ifb.sbo.api.domain.professor.Professor;
-import ifb.sbo.api.domain.usuario.DadosAutenticacao;
-import ifb.sbo.api.domain.usuario.Usuario;
-import ifb.sbo.api.domain.usuario.UsuarioRepository;
+import ifb.sbo.api.domain.usuario.*;
 import ifb.sbo.api.infra.security.DadosTokenJWT;
 import ifb.sbo.api.infra.security.TokenService;
 import jakarta.servlet.http.HttpServletResponse;
@@ -36,6 +34,9 @@ public class AutenticacaoController {
     @Autowired
     private EstudanteService estudanteService;
 
+    @Autowired
+    private AutenticacaoService autenticacaoService;
+
     @PostMapping("/login")
     public ResponseEntity login(@RequestBody @Valid DadosAutenticacao dados, HttpServletResponse response) {
         var token = new UsernamePasswordAuthenticationToken(dados.email(), dados.senha());
@@ -52,8 +53,6 @@ public class AutenticacaoController {
                 .build();
 
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
-
-//        return ResponseEntity.ok(new DadosTokenJWT(tokenJWT));
 
         return ResponseEntity.ok().body("Login bem-sucedido");
     }

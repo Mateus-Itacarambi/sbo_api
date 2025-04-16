@@ -8,6 +8,4 @@ public record TemaCadastroDTO(
         @NotBlank
         String descricao,
         @NotBlank
-        String palavrasChave,
-        @NotBlank
-        String areaConhecimento) {}
+        String palavrasChave) {}

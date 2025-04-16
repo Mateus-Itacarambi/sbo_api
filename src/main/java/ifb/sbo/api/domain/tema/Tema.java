@@ -25,7 +25,6 @@ public class Tema {
     private String titulo;
     private String descricao;
     private String palavrasChave;
-    private String areaConhecimento;
     @Column(name = "status_tema")
     @Enumerated(EnumType.STRING)
     private StatusTema status;
@@ -45,7 +44,6 @@ public class Tema {
         this.titulo = dados.titulo();
         this.descricao = dados.descricao();
         this.palavrasChave = dados.palavrasChave();
-        this.areaConhecimento = dados.areaConhecimento();
         this.dataCadastro = LocalDate.now();
         this.dataAtualizacao = LocalDate.now();
         this.status = StatusTema.DISPONIVEL;
@@ -62,10 +60,6 @@ public class Tema {
 
         if (dados.palavrasChave() != null) {
             this.palavrasChave = dados.palavrasChave();
-        }
-
-        if (dados.areaConhecimento() != null) {
-            this.areaConhecimento = dados.areaConhecimento();
         }
     }
 }

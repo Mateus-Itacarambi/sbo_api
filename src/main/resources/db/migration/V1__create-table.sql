@@ -31,7 +31,6 @@ CREATE TABLE IF NOT EXISTS tema (
     titulo VARCHAR(200) NOT NULL,
     descricao VARCHAR(200) NOT NULL,
     palavras_chave VARCHAR(200) NOT NULL,
-    area_conhecimento VARCHAR(200) NOT NULL,
     status_tema VARCHAR(45) NOT NULL,
     data_cadastro DATETIME NOT NULL,
     data_atualizacao DATETIME NOT NULL,

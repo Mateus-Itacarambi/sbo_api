@@ -9,5 +9,4 @@ public record TemaDetalhaSolicitacaoDTO(
         String titulo,
         String descricao,
         String palavrasChave,
-        String areaConchecimento,
         List<EstudanteDetalhaDTO> estudantes) {}

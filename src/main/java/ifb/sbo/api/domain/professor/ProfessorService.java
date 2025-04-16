@@ -6,6 +6,7 @@ import ifb.sbo.api.domain.area_interesse.AreaInteresseRepository;
 import ifb.sbo.api.domain.curso.Curso;
 import ifb.sbo.api.domain.curso.CursoDetalhaDTO;
 import ifb.sbo.api.domain.curso.CursoRepository;
+import ifb.sbo.api.domain.estudante.EstudanteDetalhaDTO;
 import ifb.sbo.api.domain.formacao.Formacao;
 import ifb.sbo.api.domain.formacao.FormacaoCadastroDTO;
 import ifb.sbo.api.domain.formacao.FormacaoDetalhaDTO;
@@ -191,8 +192,17 @@ public class ProfessorService {
                         tema.getTitulo(),
                         tema.getDescricao(),
                         tema.getPalavrasChave(),
-                        tema.getAreaConhecimento(),
-                        tema.getStatus().getDescricao())).toList();
+                        tema.getStatus().getDescricao(),
+                        tema.getEstudantes().stream()
+                                .map(estudante -> new EstudanteDetalhaDTO(
+                                        estudante.getId(),
+                                        estudante.getNome()
+                                ))
+                                .toList(),
+                        new ProfessorDetalhaDTO(
+                                tema.getProfessor().getId(),
+                                tema.getProfessor().getNome()
+                        ))).toList();
 
 
         return new ProfessorListagemDTO(
