@@ -135,7 +135,7 @@ public class EstudanteService {
                         estudante.getTema().getTitulo(),
                         estudante.getTema().getDescricao(),
                         estudante.getTema().getPalavrasChave(),
-                        estudante.getTema().getStatus().getDescricao(),
+                        String.valueOf(estudante.getTema().getStatus()),
                         estudante.getTema().getEstudantes().stream()
                                 .map(estudante1 -> new EstudanteDetalhaDTO(
                                         estudante1.getId(),
