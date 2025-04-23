@@ -3,6 +3,7 @@ package ifb.sbo.api.controller;
 import ifb.sbo.api.domain.estudante.Estudante;
 import ifb.sbo.api.domain.estudante.EstudanteService;
 import ifb.sbo.api.domain.professor.Professor;
+import ifb.sbo.api.domain.professor.ProfessorService;
 import ifb.sbo.api.domain.usuario.*;
 import ifb.sbo.api.infra.security.DadosTokenJWT;
 import ifb.sbo.api.infra.security.TokenService;
@@ -32,7 +33,13 @@ public class AutenticacaoController {
     private UsuarioRepository usuarioRepository;
 
     @Autowired
+    private UsuarioService usuarioService;
+
+    @Autowired
     private EstudanteService estudanteService;
+
+    @Autowired
+    private ProfessorService professorService;
 
     @Autowired
     private AutenticacaoService autenticacaoService;
@@ -86,7 +93,9 @@ public class AutenticacaoController {
             if (usuario instanceof Estudante estudante) {
                 return ResponseEntity.ok(estudanteService.detalharEstudante(estudante.getId()));
             } else if (usuario instanceof Professor professor) {
-                return ResponseEntity.ok(professor);
+                return ResponseEntity.ok(professorService.detalharProfessor(professor.getId()));
+            } else if (usuario.getRole() == TipoUsuario.ADMINISTRADOR) {
+                return ResponseEntity.ok(usuarioService.detalharUsuario(usuario.getId()));
             } else {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuário não encontrado.");
             }

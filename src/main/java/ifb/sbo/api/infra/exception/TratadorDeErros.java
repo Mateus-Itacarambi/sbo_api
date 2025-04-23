@@ -11,10 +11,10 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class TratadorDeErros {
-    @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity TratarErro404() {
-        return ResponseEntity.notFound().build();
-    }
+//    @ExceptionHandler(EntityNotFoundException.class)
+//    public ResponseEntity TratarErro404() {
+//        return ResponseEntity.notFound().build();
+//    }
 
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<String> handleBadCredentialsException(BadCredentialsException ex) {
@@ -38,5 +38,10 @@ public class TratadorDeErros {
         public DadosErroValidacao (FieldError erro) {
             this(erro.getField(), erro.getDefaultMessage());
         }
+    }
+
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<String> handleEntityNotFound(EntityNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
 }

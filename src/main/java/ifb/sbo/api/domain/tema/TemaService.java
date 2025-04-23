@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 
 
 @Service
@@ -97,7 +98,10 @@ public class TemaService {
 
         usuarioService.verificarUsuarioTema(usuarioId, tema);
 
-        buscarTemaTitulo(dados.titulo());
+
+        if (!Objects.equals(tema.getTitulo(), dados.titulo())) {
+            buscarTemaTitulo(dados.titulo());
+        }
 
         tema.atualizarTema(dados);
         temaRepository.save(tema);
@@ -132,12 +136,12 @@ public class TemaService {
     }
 
     @Transactional
-    public void removerEstudanteDoTema(Long temaId, Long usuarioId, Long estudanteId) {
+    public void removerEstudanteDoTema(Long temaId, Long usuarioId, String matricula) {
         Tema tema = buscarTema(temaId);
 
         usuarioService.verificarUsuarioTema(usuarioId, tema);
 
-        Estudante estudante = estudanteService.buscarEstudante(estudanteId);
+        Estudante estudante = estudanteService.buscarEstudanteMatricula(matricula);
 
         if (tema.getEstudantes().size() == 1) {
             throw new ConflitoException("Não é possível remover estudante do tema.");

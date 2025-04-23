@@ -141,7 +141,7 @@ public class SolitacaoService {
             tema.setProfessor(professor);
 
             List<Estudante> estudantes = tema.getEstudantes();
-            estudantes.forEach(e -> temaService.removerEstudanteDoTema(tema.getId(), professor.getId(), e.getId()));
+            estudantes.forEach(e -> temaService.removerEstudanteDoTema(tema.getId(), professor.getId(), e.getMatricula()));
         }
 
         tema.setDataAtualizacao(LocalDate.now());

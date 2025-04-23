@@ -73,9 +73,9 @@ public class TemaController {
         return ResponseEntity.created(uri).body(temaService.detalharTema(temaId));
     }
 
-    @DeleteMapping("/{temaId}/removerEstudante/{usuarioId}/{estudanteId}")
-    public ResponseEntity removerEstudanteDoTema(@PathVariable Long temaId, @PathVariable Long usuarioId, @PathVariable Long estudanteId) {
-        temaService.removerEstudanteDoTema(temaId, usuarioId, estudanteId);
+    @DeleteMapping("/{temaId}/removerEstudante/{usuarioId}")
+    public ResponseEntity removerEstudanteDoTema(@PathVariable Long temaId, @PathVariable Long usuarioId, @RequestBody EstudanteListagemDTO dados) {
+        temaService.removerEstudanteDoTema(temaId, usuarioId, dados.matricula());
         return ResponseEntity.noContent().build();
     }
 }
