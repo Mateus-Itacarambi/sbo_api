@@ -22,7 +22,7 @@ public class AdminInitializer implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         if (usuarioRepository.findByEmail("admin@sbo.com.br").isEmpty()) {
-            Usuario admin = new Usuario("Administrador", LocalDate.of(2000, 01 ,01), "Outro", "admin@sbo.com.br", "admin123");
+            Usuario admin = new Usuario("Administrador", LocalDate.of(2000, 1 ,1), "Outro", "admin@sbo.com.br", "admin123");
             admin.setRole(TipoUsuario.ADMINISTRADOR);
 
             usuarioRepository.save(admin);

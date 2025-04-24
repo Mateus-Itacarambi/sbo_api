@@ -103,7 +103,9 @@ public class UsuarioService {
                 usuario.getNome(),
                 usuario.getDataNascimento(),
                 usuario.getGenero(),
-                usuario.getEmail()
+                usuario.getEmail(),
+                usuario.getRole().toString(),
+                usuario.getAtivo()
         );
     }
 }

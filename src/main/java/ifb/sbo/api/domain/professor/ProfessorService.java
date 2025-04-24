@@ -15,15 +15,23 @@ import ifb.sbo.api.domain.tema.*;
 import ifb.sbo.api.domain.usuario.TipoUsuario;
 import ifb.sbo.api.domain.usuario.UsuarioService;
 import ifb.sbo.api.infra.exception.ConflitoException;
+import ifb.sbo.api.infra.service.EnviarEmail;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 
 @Service
@@ -42,6 +50,9 @@ public class ProfessorService {
 
     @Autowired
     private UsuarioService usuarioService;
+
+    @Autowired
+    private EnviarEmail emailService;
 
     public ProfessorListagemDTO cadastrar(ProfessorCadastroDTO dados) {
         usuarioService.buscarEmail(dados.email());
@@ -125,6 +136,53 @@ public class ProfessorService {
         professorRepository.save(professor);
 
         formacaoRepository.deleteById(formacaoId);
+    }
+
+    public List<Professor> importarProfessores(MultipartFile file) throws Exception {
+        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        List<Professor> professores = new ArrayList<>();
+
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream()))) {
+            String linha;
+            boolean primeiraLinha = true;
+
+            while ((linha = reader.readLine()) != null) {
+                if (primeiraLinha) {
+                    primeiraLinha = false;
+                    continue;
+                }
+
+                String[] campos = linha.split(",");
+                String nome = campos[0].trim();
+                String email = campos[1].trim();
+
+                System.out.println("Nome: " + nome + " Email: " + email);
+
+                String senhaGerada = gerarSenhaAleatoria();
+                Professor professor = new Professor();
+                professor.setNome(nome);
+                professor.setDataNascimento(LocalDate.of(2000, 1, 1));
+                professor.setDataCadastro(LocalDate.now());
+                professor.setGenero("Outro");
+                professor.setIdLattes("Precisa alterar");
+                professor.setEmail(email);
+                professor.setSenha(passwordEncoder.encode(senhaGerada));
+                professor.setAtivo(false);
+                professor.setDisponibilidade(Disponibilidade.DISPONIVEL);
+                professor.setRole(TipoUsuario.PROFESSOR);
+
+                professorRepository.save(professor);
+                emailService.enviarSenhaPorEmail(email, senhaGerada);
+
+                professores.add(professor);
+            }
+        }
+
+        return professores;
+    }
+
+    public String gerarSenhaAleatoria() {
+        return UUID.randomUUID().toString().substring(0, 8);
     }
 
     public Page<ProfessorListagemDTO> listarProfessoresPaginados(@PageableDefault(size = 20, sort = {"nome"}) Pageable paginacao) {
@@ -212,6 +270,7 @@ public class ProfessorService {
                 professor.getGenero(),
                 professor.getEmail(),
                 professor.getIdLattes(),
+                professor.getRole().toString(),
                 String.valueOf(professor.getDisponibilidade()),
                 cursosDTO,
                 areasInteresseDTO,

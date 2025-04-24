@@ -15,6 +15,7 @@ public record ProfessorListagemDTO(
         String genero,
         String email,
         String idLattes,
+        String role,
         String disponibilidade,
         List<CursoDetalhaDTO> cursos,
         List<AreaInteresseDetalhaDTO> areasDeInteresse,

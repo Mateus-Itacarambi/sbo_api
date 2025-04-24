@@ -5,6 +5,7 @@ import ifb.sbo.api.domain.estudante.EstudanteService;
 import ifb.sbo.api.domain.professor.Professor;
 import ifb.sbo.api.domain.professor.ProfessorService;
 import ifb.sbo.api.domain.usuario.*;
+import ifb.sbo.api.infra.exception.ConflitoException;
 import ifb.sbo.api.infra.security.DadosTokenJWT;
 import ifb.sbo.api.infra.security.TokenService;
 import jakarta.servlet.http.HttpServletResponse;

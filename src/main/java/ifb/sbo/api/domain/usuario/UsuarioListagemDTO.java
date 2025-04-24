@@ -7,4 +7,7 @@ public record UsuarioListagemDTO(
         String nome,
         LocalDate dataNascimento,
         String genero,
-        String email) {}
+        String email,
+        String role,
+        Boolean ativo
+        ) {}
