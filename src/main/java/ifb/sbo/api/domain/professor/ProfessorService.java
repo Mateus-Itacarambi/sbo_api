@@ -138,6 +138,7 @@ public class ProfessorService {
         formacaoRepository.deleteById(formacaoId);
     }
 
+    Atualmente esta função para quando um email já está no banco de dados. Como eu posso fazer para ele pular esses emails e também retornar um relatório contendo as linhas que não foram importadas?
     public List<Professor> importarProfessores(MultipartFile file) throws Exception {
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         List<Professor> professores = new ArrayList<>();
@@ -156,7 +157,7 @@ public class ProfessorService {
                 String nome = campos[0].trim();
                 String email = campos[1].trim();
 
-                System.out.println("Nome: " + nome + " Email: " + email);
+//                usuarioService.buscarEmail(email);
 
                 String senhaGerada = gerarSenhaAleatoria();
                 Professor professor = new Professor();
@@ -167,12 +168,13 @@ public class ProfessorService {
                 professor.setIdLattes("Precisa alterar");
                 professor.setEmail(email);
                 professor.setSenha(passwordEncoder.encode(senhaGerada));
-                professor.setAtivo(false);
+                professor.setAtivo(true);
                 professor.setDisponibilidade(Disponibilidade.DISPONIVEL);
                 professor.setRole(TipoUsuario.PROFESSOR);
 
                 professorRepository.save(professor);
-                emailService.enviarSenhaPorEmail(email, senhaGerada);
+                System.out.println("SENHA: " + senhaGerada + " ATIVO: " + professor.getAtivo());
+//                emailService.enviarSenhaPorEmail(email, senhaGerada);
 
                 professores.add(professor);
             }
@@ -180,6 +182,77 @@ public class ProfessorService {
 
         return professores;
     }
+
+    public ByteArrayResource importarProfessoresComRelatorioCsv(MultipartFile file) throws IOException {
+        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        StringBuilder csvContent = new StringBuilder();
+
+        // Cabeçalho do CSV
+        csvContent.append("Linha,Mensagem\n");
+
+        int linhaAtual = 1;
+
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream()))) {
+            String linha;
+            boolean primeiraLinha = true;
+
+            while ((linha = reader.readLine()) != null) {
+                if (primeiraLinha) {
+                    primeiraLinha = false;
+                    linhaAtual++;
+                    continue;
+                }
+
+                String[] campos = linha.split(",");
+                if (campos.length < 2) {
+                    csvContent.append(linhaAtual).append(",formato inválido\n");
+                    linhaAtual++;
+                    continue;
+                }
+
+                String nome = campos[0].trim();
+                String email = campos[1].trim();
+
+                try {
+                    if (usuarioRepository.existsByEmail(email)) {
+                        csvContent.append(linhaAtual).append(",e-mail '").append(email).append("' já existe.\n");
+                        linhaAtual++;
+                        continue;
+                    }
+
+                    String senhaGerada = gerarSenhaAleatoria();
+                    Professor professor = new Professor();
+                    professor.setNome(nome);
+                    professor.setDataNascimento(LocalDate.of(2000, 1, 1));
+                    professor.setDataCadastro(LocalDate.now());
+                    professor.setGenero("Outro");
+                    professor.setIdLattes("Precisa alterar");
+                    professor.setEmail(email);
+                    professor.setSenha(passwordEncoder.encode(senhaGerada));
+                    professor.setAtivo(true);
+                    professor.setDisponibilidade(Disponibilidade.DISPONIVEL);
+                    professor.setRole(TipoUsuario.PROFESSOR);
+
+                    professorRepository.save(professor);
+
+                    // Se tudo deu certo, apenas uma linha vazia com sucesso
+                    csvContent.append(linhaAtual).append(",importado com sucesso\n");
+
+                } catch (Exception e) {
+                    csvContent.append(linhaAtual).append(",erro inesperado - ").append(e.getMessage()).append("\n");
+                }
+
+                linhaAtual++;
+            }
+        }
+
+        if (csvContent.length() == 0) {
+            csvContent.append("Todos os professores foram importados com sucesso.\n");
+        }
+
+        return new ByteArrayResource(csvContent.toString().getBytes(StandardCharsets.UTF_8));
+    }
+
 
     public String gerarSenhaAleatoria() {
         return UUID.randomUUID().toString().substring(0, 8);

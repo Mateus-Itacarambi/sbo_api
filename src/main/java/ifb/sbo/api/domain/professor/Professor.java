@@ -28,7 +28,6 @@ public class Professor extends Usuario {
     private String idLattes;
     @Enumerated(value = EnumType.STRING)
     private Disponibilidade disponibilidade;
-    private Boolean ativo;
     @UniqueElements
     @ManyToMany
     @JoinTable(
@@ -56,7 +55,6 @@ public class Professor extends Usuario {
         super(dados.nome(), dados.dataNascimento(), dados.genero(), dados.email(), dados.senha());
         this.idLattes = dados.idLattes();
         this.disponibilidade = Disponibilidade.DISPONIVEL;
-        this.ativo = true;
     }
 
     public void atualizarInformacoes(ProfessorAtualizaDTO dados) {
