@@ -13,11 +13,13 @@ import ifb.sbo.api.domain.formacao.FormacaoDetalhaDTO;
 import ifb.sbo.api.domain.formacao.FormacaoRepository;
 import ifb.sbo.api.domain.tema.*;
 import ifb.sbo.api.domain.usuario.TipoUsuario;
+import ifb.sbo.api.domain.usuario.UsuarioRepository;
 import ifb.sbo.api.domain.usuario.UsuarioService;
 import ifb.sbo.api.infra.exception.ConflitoException;
 import ifb.sbo.api.infra.service.EnviarEmail;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -27,7 +29,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,6 +54,9 @@ public class ProfessorService {
 
     @Autowired
     private UsuarioService usuarioService;
+
+    @Autowired
+    private UsuarioRepository usuarioRepository;
 
     @Autowired
     private EnviarEmail emailService;
@@ -138,51 +145,51 @@ public class ProfessorService {
         formacaoRepository.deleteById(formacaoId);
     }
 
-    Atualmente esta função para quando um email já está no banco de dados. Como eu posso fazer para ele pular esses emails e também retornar um relatório contendo as linhas que não foram importadas?
-    public List<Professor> importarProfessores(MultipartFile file) throws Exception {
-        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-        List<Professor> professores = new ArrayList<>();
+//    public List<Professor> importarProfessores(MultipartFile file) throws Exception {
+//        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+//        List<Professor> professores = new ArrayList<>();
+//
+//        try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream()))) {
+//            String linha;
+//            boolean primeiraLinha = true;
+//
+//            while ((linha = reader.readLine()) != null) {
+//                if (primeiraLinha) {
+//                    primeiraLinha = false;
+//                    continue;
+//                }
+//
+//                String[] campos = linha.split(",");
+//                String nome = campos[0].trim();
+//                String email = campos[1].trim();
+//
+////                usuarioService.buscarEmail(email);
+//
+//                String senhaGerada = gerarSenhaAleatoria();
+//                Professor professor = new Professor();
+//                professor.setNome(nome);
+//                professor.setDataNascimento(LocalDate.of(2000, 1, 1));
+//                professor.setDataCadastro(LocalDate.now());
+//                professor.setGenero("Outro");
+//                professor.setIdLattes("Precisa alterar");
+//                professor.setEmail(email);
+//                professor.setSenha(passwordEncoder.encode(senhaGerada));
+//                professor.setAtivo(true);
+//                professor.setDisponibilidade(Disponibilidade.DISPONIVEL);
+//                professor.setRole(TipoUsuario.PROFESSOR);
+//
+//                professorRepository.save(professor);
+//                System.out.println("SENHA: " + senhaGerada + " ATIVO: " + professor.getAtivo());
+////                emailService.enviarSenhaPorEmail(email, senhaGerada);
+//
+//                professores.add(professor);
+//            }
+//        }
+//
+//        return professores;
+//    }
 
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream()))) {
-            String linha;
-            boolean primeiraLinha = true;
-
-            while ((linha = reader.readLine()) != null) {
-                if (primeiraLinha) {
-                    primeiraLinha = false;
-                    continue;
-                }
-
-                String[] campos = linha.split(",");
-                String nome = campos[0].trim();
-                String email = campos[1].trim();
-
-//                usuarioService.buscarEmail(email);
-
-                String senhaGerada = gerarSenhaAleatoria();
-                Professor professor = new Professor();
-                professor.setNome(nome);
-                professor.setDataNascimento(LocalDate.of(2000, 1, 1));
-                professor.setDataCadastro(LocalDate.now());
-                professor.setGenero("Outro");
-                professor.setIdLattes("Precisa alterar");
-                professor.setEmail(email);
-                professor.setSenha(passwordEncoder.encode(senhaGerada));
-                professor.setAtivo(true);
-                professor.setDisponibilidade(Disponibilidade.DISPONIVEL);
-                professor.setRole(TipoUsuario.PROFESSOR);
-
-                professorRepository.save(professor);
-                System.out.println("SENHA: " + senhaGerada + " ATIVO: " + professor.getAtivo());
-//                emailService.enviarSenhaPorEmail(email, senhaGerada);
-
-                professores.add(professor);
-            }
-        }
-
-        return professores;
-    }
-
+    @Transactional
     public ByteArrayResource importarProfessoresComRelatorioCsv(MultipartFile file) throws IOException {
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         StringBuilder csvContent = new StringBuilder();
