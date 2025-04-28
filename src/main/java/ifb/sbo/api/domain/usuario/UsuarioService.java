@@ -105,7 +105,8 @@ public class UsuarioService {
                 usuario.getGenero(),
                 usuario.getEmail(),
                 usuario.getRole().toString(),
-                usuario.getAtivo()
+                usuario.getAtivo(),
+                usuario.getCadastroCompleto()
         );
     }
 }

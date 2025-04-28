@@ -9,5 +9,6 @@ public record UsuarioListagemDTO(
         String genero,
         String email,
         String role,
-        Boolean ativo
+        Boolean ativo,
+        Boolean cadastroCompleto
         ) {}

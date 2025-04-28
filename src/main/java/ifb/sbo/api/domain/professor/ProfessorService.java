@@ -145,50 +145,6 @@ public class ProfessorService {
         formacaoRepository.deleteById(formacaoId);
     }
 
-//    public List<Professor> importarProfessores(MultipartFile file) throws Exception {
-//        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-//        List<Professor> professores = new ArrayList<>();
-//
-//        try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream()))) {
-//            String linha;
-//            boolean primeiraLinha = true;
-//
-//            while ((linha = reader.readLine()) != null) {
-//                if (primeiraLinha) {
-//                    primeiraLinha = false;
-//                    continue;
-//                }
-//
-//                String[] campos = linha.split(",");
-//                String nome = campos[0].trim();
-//                String email = campos[1].trim();
-//
-////                usuarioService.buscarEmail(email);
-//
-//                String senhaGerada = gerarSenhaAleatoria();
-//                Professor professor = new Professor();
-//                professor.setNome(nome);
-//                professor.setDataNascimento(LocalDate.of(2000, 1, 1));
-//                professor.setDataCadastro(LocalDate.now());
-//                professor.setGenero("Outro");
-//                professor.setIdLattes("Precisa alterar");
-//                professor.setEmail(email);
-//                professor.setSenha(passwordEncoder.encode(senhaGerada));
-//                professor.setAtivo(true);
-//                professor.setDisponibilidade(Disponibilidade.DISPONIVEL);
-//                professor.setRole(TipoUsuario.PROFESSOR);
-//
-//                professorRepository.save(professor);
-//                System.out.println("SENHA: " + senhaGerada + " ATIVO: " + professor.getAtivo());
-////                emailService.enviarSenhaPorEmail(email, senhaGerada);
-//
-//                professores.add(professor);
-//            }
-//        }
-//
-//        return professores;
-//    }
-
     @Transactional
     public ByteArrayResource importarProfessoresComRelatorioCsv(MultipartFile file) throws IOException {
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
@@ -233,16 +189,18 @@ public class ProfessorService {
                     professor.setDataNascimento(LocalDate.of(2000, 1, 1));
                     professor.setDataCadastro(LocalDate.now());
                     professor.setGenero("Outro");
-                    professor.setIdLattes("Precisa alterar");
+                    professor.setIdLattes("000000000000000");
                     professor.setEmail(email);
                     professor.setSenha(passwordEncoder.encode(senhaGerada));
                     professor.setAtivo(true);
                     professor.setDisponibilidade(Disponibilidade.DISPONIVEL);
                     professor.setRole(TipoUsuario.PROFESSOR);
+                    professor.setCadastroCompleto(false);
+
+                    System.out.println("EMAIL: " + professor.getEmail() + "SENHA: " + senhaGerada);
 
                     professorRepository.save(professor);
 
-                    // Se tudo deu certo, apenas uma linha vazia com sucesso
                     csvContent.append(linhaAtual).append(",importado com sucesso\n");
 
                 } catch (Exception e) {
@@ -351,6 +309,8 @@ public class ProfessorService {
                 professor.getEmail(),
                 professor.getIdLattes(),
                 professor.getRole().toString(),
+                professor.getAtivo(),
+                professor.getCadastroCompleto(),
                 String.valueOf(professor.getDisponibilidade()),
                 cursosDTO,
                 areasInteresseDTO,

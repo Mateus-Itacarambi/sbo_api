@@ -1,0 +1,1 @@
+ALTER TABLE usuario ADD cadastro_completo boolean;

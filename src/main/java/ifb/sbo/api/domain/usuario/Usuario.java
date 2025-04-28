@@ -39,6 +39,8 @@ public class Usuario implements UserDetails {
     @Column(name = "tipo")
     private TipoUsuario role;
     protected Boolean ativo;
+    @Column(name = "cadastro_completo")
+    protected Boolean cadastroCompleto;
 
     public Usuario(String nome, LocalDate dataNascimento, String genero, String email, String senha) {
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
@@ -49,6 +51,7 @@ public class Usuario implements UserDetails {
         this.senha = passwordEncoder.encode(senha);
         this.dataCadastro = LocalDate.now();
         this.ativo = true;
+        this.cadastroCompleto = true;
     }
 
     public void atualizarInformacoes(UsuarioAtualizaDTO dados) {

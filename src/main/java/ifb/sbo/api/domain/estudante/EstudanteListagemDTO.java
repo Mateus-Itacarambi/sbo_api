@@ -14,6 +14,8 @@ public record EstudanteListagemDTO(
         String genero,
         String email,
         String role,
+        Boolean ativo,
+        Boolean cadastroCompleto,
         String matricula,
         Integer semestre,
         CursoDetalhaDTO curso,

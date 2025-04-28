@@ -50,7 +50,8 @@ public class AutenticacaoController {
         var token = new UsernamePasswordAuthenticationToken(dados.email(), dados.senha());
         var authentication = manager.authenticate(token);
 
-        var tokenJWT = tokenService.gerarToken((Usuario) authentication.getPrincipal());
+        var usuario = (Usuario) authentication.getPrincipal();
+        var tokenJWT = tokenService.gerarToken(usuario);
 
         ResponseCookie cookie = ResponseCookie.from("token", tokenJWT)
                 .httpOnly(true)
@@ -62,7 +63,7 @@ public class AutenticacaoController {
 
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
-        return ResponseEntity.ok().body("Login bem-sucedido");
+        return ResponseEntity.ok().body(usuarioService.detalharUsuario(usuario.getId()));
     }
 
     @PostMapping("/logout")

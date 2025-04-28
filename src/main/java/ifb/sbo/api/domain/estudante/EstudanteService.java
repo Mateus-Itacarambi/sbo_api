@@ -124,6 +124,8 @@ public class EstudanteService {
                 estudante.getGenero(),
                 estudante.getEmail(),
                 estudante.getRole().toString(),
+                estudante.getAtivo(),
+                estudante.getCadastroCompleto(),
                 estudante.getMatricula(),
                 estudante.getSemestre() != null ? estudante.getSemestre() : null,
                 estudante.getCurso() != null ? new CursoDetalhaDTO(

@@ -56,6 +56,48 @@ public class ProfessorController {
         return ResponseEntity.ok(professorService.detalharProfessor(professor.getId()));
     }
 
+//    @PutMapping("/atualizar-cadastro")
+//    @Transactional
+//    public ResponseEntity atualizarCadastro(@RequestBody @Valid ProfessorAtualizaDTO dados) {
+//        var professor = professorRepository.getReferenceById(dados.id());
+//        professor.atualizarInformacoes(dados);
+//        return ResponseEntity.ok(professorService.detalharProfessor(professor.getId()));
+//    }
+
+    @PutMapping("/atualizar-cadastro")
+    public ResponseEntity<?> atualizarCadastro(@RequestBody ProfessorAtualizaCadastroDTO dados) {
+        Professor professor = professorRepository.findById(dados.id())
+                .orElseThrow(() -> new RuntimeException("Professor não encontrado."));
+
+        // Atualizar dados básicos
+        professor.setNome(dto.getNome());
+        professor.setGenero(dto.getGenero());
+        professor.setEmail(dto.getEmail());
+        professor.setIdLattes(dto.getIdLattes());
+
+        if (dto.getDataNascimento() != null && !dto.getDataNascimento().isEmpty()) {
+            professor.setDataNascimento(LocalDate.parse(dto.getDataNascimento()));
+        }
+
+        // Atualizar senha se enviada
+        if (dto.getSenhaAtual() != null && !dto.getSenhaAtual().isEmpty()) {
+            if (!authService.verificarSenha(dto.getSenhaAtual(), professor.getSenha())) {
+                return ResponseEntity.badRequest().body("Senha atual incorreta.");
+            }
+
+            if (!dto.getSenhaNova().equals(dto.getSenhaConfirmar())) {
+                return ResponseEntity.badRequest().body("Nova senha e confirmação não conferem.");
+            }
+
+            professor.setSenha(authService.criptografarSenha(dto.getSenhaNova()));
+        }
+
+        professorRepository.save(professor);
+
+        return ResponseEntity.ok("Cadastro atualizado com sucesso.");
+    }
+}
+
     @DeleteMapping("/{id}")
     @Transactional
     public ResponseEntity desativar(@PathVariable Long id) {
@@ -123,17 +165,6 @@ public class ProfessorController {
 
         return ResponseEntity.ok(new FormacaoListagemDTO(formacao));
     }
-
-//    @PostMapping("/importar-professores")
-//    @Transactional
-//    public ResponseEntity<?> importarProfessores(@RequestParam("file") MultipartFile file) {
-//        try {
-//            List<Professor> professoresImportados = professorService.importarProfessores(file);
-//            return ResponseEntity.ok(professoresImportados);
-//        } catch (Exception e) {
-//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Erro ao importar professores: " + e.getMessage());
-//        }
-//    }
 
     @PostMapping("/importar-relatorio-csv")
     public ResponseEntity<Resource> importarProfessoresRelatorioCsv(@RequestParam("file") MultipartFile file) {

@@ -16,6 +16,8 @@ public record ProfessorListagemDTO(
         String email,
         String idLattes,
         String role,
+        Boolean ativo,
+        Boolean cadastroCompleto,
         String disponibilidade,
         List<CursoDetalhaDTO> cursos,
         List<AreaInteresseDetalhaDTO> areasDeInteresse,
