@@ -11,11 +11,12 @@ import ifb.sbo.api.domain.formacao.Formacao;
 import ifb.sbo.api.domain.formacao.FormacaoCadastroDTO;
 import ifb.sbo.api.domain.formacao.FormacaoDetalhaDTO;
 import ifb.sbo.api.domain.formacao.FormacaoRepository;
-import ifb.sbo.api.domain.tema.*;
+import ifb.sbo.api.domain.tema.TemaDetalhaDTO;
 import ifb.sbo.api.domain.usuario.TipoUsuario;
 import ifb.sbo.api.domain.usuario.UsuarioRepository;
 import ifb.sbo.api.domain.usuario.UsuarioService;
 import ifb.sbo.api.infra.exception.ConflitoException;
+import ifb.sbo.api.infra.service.AuthService;
 import ifb.sbo.api.infra.service.EnviarEmail;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,8 +34,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 
@@ -57,6 +58,9 @@ public class ProfessorService {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private AuthService authService;
 
     @Autowired
     private EnviarEmail emailService;
@@ -197,9 +201,9 @@ public class ProfessorService {
                     professor.setRole(TipoUsuario.PROFESSOR);
                     professor.setCadastroCompleto(false);
 
-                    System.out.println("EMAIL: " + professor.getEmail() + "SENHA: " + senhaGerada);
-
                     professorRepository.save(professor);
+                    System.out.println("EMAIL: " + professor.getEmail() + "SENHA: " + senhaGerada);
+                    emailService.enviarSenhaPorEmail(email, senhaGerada);
 
                     csvContent.append(linhaAtual).append(",importado com sucesso\n");
 
@@ -216,6 +220,50 @@ public class ProfessorService {
         }
 
         return new ByteArrayResource(csvContent.toString().getBytes(StandardCharsets.UTF_8));
+    }
+
+    public ProfessorListagemDTO atualizarCadastro(ProfessorAtualizaCadastroDTO dados) {
+        Professor professor = professorRepository.findById(dados.id())
+                .orElseThrow(() -> new RuntimeException("Professor não encontrado."));
+
+        professor.setNome(dados.nome());
+        professor.setGenero(dados.genero());
+
+        if (!Objects.equals(professor.getEmail(), dados.email())) {
+            usuarioService.buscarEmail(dados.email());
+        }
+        professor.setEmail(dados.email());
+
+
+
+        if (!Objects.equals(professor.getIdLattes(), dados.idLattes())) {
+            buscarLattes(dados.idLattes());
+        }
+        professor.setIdLattes(dados.idLattes());
+
+        professor.setDataNascimento(dados.dataNascimento());
+
+        if (dados.senhaAtual() != null && !dados.senhaAtual().isEmpty()) {
+            if (!authService.verificarSenha(dados.senhaAtual(), professor.getSenha())) {
+                throw new ConflitoException("Senha atual incorreta.");
+            }
+
+            if (!dados.senhaNova().equals(dados.senhaConfirmar())) {
+                throw new ConflitoException("Nova senha e confirmação não conferem.");
+            }
+
+            if (dados.senhaNova().equals(professor.getSenha())) {
+                throw new ConflitoException("Senha atual e nova senha são iguais.");
+            }
+
+            professor.setSenha(authService.criptografarSenha(dados.senhaNova()));
+        }
+
+        professor.setCadastroCompleto(true);
+
+        professorRepository.save(professor);
+
+        return mapearParaDTO(professor);
     }
 
 

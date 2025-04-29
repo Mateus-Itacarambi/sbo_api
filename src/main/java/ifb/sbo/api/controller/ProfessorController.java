@@ -1,7 +1,10 @@
 package ifb.sbo.api.controller;
 
 
-import ifb.sbo.api.domain.formacao.*;
+import ifb.sbo.api.domain.formacao.FormacaoAtualizaDTO;
+import ifb.sbo.api.domain.formacao.FormacaoCadastroDTO;
+import ifb.sbo.api.domain.formacao.FormacaoListagemDTO;
+import ifb.sbo.api.domain.formacao.FormacaoRepository;
 import ifb.sbo.api.domain.professor.*;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +22,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
-import java.util.List;
 
 @RestController
 @RequestMapping("professores")
@@ -32,7 +34,6 @@ public class ProfessorController {
 
     @Autowired
     private FormacaoRepository formacaoRepository;
-
 
     @PostMapping
     public ResponseEntity cadastrar(@RequestBody @Valid ProfessorCadastroDTO dados, UriComponentsBuilder uriBuilder) {
@@ -56,47 +57,11 @@ public class ProfessorController {
         return ResponseEntity.ok(professorService.detalharProfessor(professor.getId()));
     }
 
-//    @PutMapping("/atualizar-cadastro")
-//    @Transactional
-//    public ResponseEntity atualizarCadastro(@RequestBody @Valid ProfessorAtualizaDTO dados) {
-//        var professor = professorRepository.getReferenceById(dados.id());
-//        professor.atualizarInformacoes(dados);
-//        return ResponseEntity.ok(professorService.detalharProfessor(professor.getId()));
-//    }
-
     @PutMapping("/atualizar-cadastro")
     public ResponseEntity<?> atualizarCadastro(@RequestBody ProfessorAtualizaCadastroDTO dados) {
-        Professor professor = professorRepository.findById(dados.id())
-                .orElseThrow(() -> new RuntimeException("Professor não encontrado."));
-
-        // Atualizar dados básicos
-        professor.setNome(dto.getNome());
-        professor.setGenero(dto.getGenero());
-        professor.setEmail(dto.getEmail());
-        professor.setIdLattes(dto.getIdLattes());
-
-        if (dto.getDataNascimento() != null && !dto.getDataNascimento().isEmpty()) {
-            professor.setDataNascimento(LocalDate.parse(dto.getDataNascimento()));
-        }
-
-        // Atualizar senha se enviada
-        if (dto.getSenhaAtual() != null && !dto.getSenhaAtual().isEmpty()) {
-            if (!authService.verificarSenha(dto.getSenhaAtual(), professor.getSenha())) {
-                return ResponseEntity.badRequest().body("Senha atual incorreta.");
-            }
-
-            if (!dto.getSenhaNova().equals(dto.getSenhaConfirmar())) {
-                return ResponseEntity.badRequest().body("Nova senha e confirmação não conferem.");
-            }
-
-            professor.setSenha(authService.criptografarSenha(dto.getSenhaNova()));
-        }
-
-        professorRepository.save(professor);
-
-        return ResponseEntity.ok("Cadastro atualizado com sucesso.");
+        var professor = professorService.atualizarCadastro(dados);
+        return ResponseEntity.ok(professor);
     }
-}
 
     @DeleteMapping("/{id}")
     @Transactional
