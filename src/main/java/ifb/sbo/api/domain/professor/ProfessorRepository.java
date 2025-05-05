@@ -12,4 +12,6 @@ public interface ProfessorRepository extends JpaRepository<Professor, Long> {
     int countByIdLattes(String idLattes);
 
     Optional<Professor> findByIdAndAtivoTrue(Long professorId);
+
+    Optional<Professor> findByIdLattesAndAtivoTrueAndCadastroCompletoTrue(String identificador);
 }
