@@ -6,8 +6,6 @@ import jakarta.validation.constraints.NotNull;
 public record FormacaoCadastroDTO(
         @NotBlank
         String curso,
-        @NotNull
-        String modalidade,
         @NotBlank
         String faculdade,
         @NotBlank
@@ -15,9 +13,7 @@ public record FormacaoCadastroDTO(
         @NotBlank
         Long anoInicio,
         @NotBlank
-        Long anoFim,
-        @NotBlank
-        Long professorId) {
+        Long anoFim) {
 
         public FormacaoCadastroDTO {
                 if (anoInicio <= 0) {

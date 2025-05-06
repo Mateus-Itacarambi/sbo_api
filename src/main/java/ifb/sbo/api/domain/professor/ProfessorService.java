@@ -323,7 +323,6 @@ public class ProfessorService {
                 .stream()
                 .map(formacao -> new FormacaoDetalhaDTO(
                         formacao.getCurso(),
-                        formacao.getModalidade(),
                         formacao.getFaculdade(),
                         formacao.getTitulo(),
                         formacao.getAnoInicio(),

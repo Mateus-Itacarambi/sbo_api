@@ -1,0 +1,1 @@
+ALTER TABLE formacao DROP COLUMN modalidade;

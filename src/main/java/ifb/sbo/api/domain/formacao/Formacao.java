@@ -18,7 +18,6 @@ public class Formacao {
     @Column(name = "id_formacao")
     private Long id;
     private String curso;
-    private String modalidade;
     private String faculdade;
     private String titulo;
     private Long anoInicio;
@@ -29,7 +28,6 @@ public class Formacao {
 
     public Formacao(FormacaoCadastroDTO dados) {
         this.curso = dados.curso();
-        this.modalidade = dados.modalidade();
         this.faculdade = dados.faculdade();
         this.titulo = dados.titulo();
         this.anoInicio = dados.anoInicio();
@@ -39,10 +37,6 @@ public class Formacao {
     public void atualizarFormacao(FormacaoAtualizaDTO dados) {
         if (dados.curso() != null) {
             this.curso = dados.curso();
-        }
-
-        if (dados.modalidade() != null) {
-            this.modalidade = dados.modalidade();
         }
 
         if (dados.faculdade() != null) {
