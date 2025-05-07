@@ -7,7 +7,7 @@ public record FormacaoCadastroDTO(
         @NotBlank
         String curso,
         @NotBlank
-        String faculdade,
+        String instituicao,
         @NotBlank
         String titulo,
         @NotBlank

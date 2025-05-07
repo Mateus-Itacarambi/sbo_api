@@ -18,7 +18,8 @@ public class Formacao {
     @Column(name = "id_formacao")
     private Long id;
     private String curso;
-    private String faculdade;
+    private String instituicao;
+    @Column(name = "titulo_tcc")
     private String titulo;
     private Long anoInicio;
     private Long anoFim;
@@ -28,7 +29,7 @@ public class Formacao {
 
     public Formacao(FormacaoCadastroDTO dados) {
         this.curso = dados.curso();
-        this.faculdade = dados.faculdade();
+        this.instituicao = dados.instituicao();
         this.titulo = dados.titulo();
         this.anoInicio = dados.anoInicio();
         this.anoFim = dados.anoFim();
@@ -39,8 +40,8 @@ public class Formacao {
             this.curso = dados.curso();
         }
 
-        if (dados.faculdade() != null) {
-            this.faculdade = dados.faculdade();
+        if (dados.instituicao() != null) {
+            this.instituicao = dados.instituicao();
         }
 
         if (dados.titulo() != null) {

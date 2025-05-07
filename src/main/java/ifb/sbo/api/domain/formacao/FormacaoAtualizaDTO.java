@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotNull;
 
 public record FormacaoAtualizaDTO(
         String curso,
-        String faculdade,
+        String instituicao,
         String titulo,
         Long anoInicio,
         Long anoFim,
