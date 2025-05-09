@@ -322,6 +322,7 @@ public class ProfessorService {
         List<FormacaoDetalhaDTO> formacoesDTO = professor.getFormacoes()
                 .stream()
                 .map(formacao -> new FormacaoDetalhaDTO(
+                        formacao.getId(),
                         formacao.getCurso(),
                         formacao.getInstituicao(),
                         formacao.getTitulo(),
