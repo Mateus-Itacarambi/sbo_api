@@ -336,7 +336,7 @@ public class ProfessorService {
                         tema.getTitulo(),
                         tema.getDescricao(),
                         tema.getPalavrasChave(),
-                        tema.getStatus().getDescricao(),
+                        String.valueOf(tema.getStatus()),
                         tema.getEstudantes().stream()
                                 .map(estudante -> new EstudanteDetalhaDTO(
                                         estudante.getId(),
