@@ -296,7 +296,7 @@ public class ProfessorService {
                 .orElseThrow(() -> new EntityNotFoundException("Curso não encontrado."));
     }
 
-    private Formacao buscarFormacao(Long formacaoId) {
+    public Formacao buscarFormacao(Long formacaoId) {
         return formacaoRepository.findById(formacaoId)
                 .orElseThrow(() -> new EntityNotFoundException("Formação não encontrada."));
     }

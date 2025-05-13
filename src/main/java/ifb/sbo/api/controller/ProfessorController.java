@@ -125,6 +125,7 @@ public class ProfessorController {
     @PutMapping("/atualizarFormacoes/{formacaoId}")
     @Transactional
     public ResponseEntity<FormacaoListagemDTO> atualizarFormacao(@PathVariable Long formacaoId,  @RequestBody FormacaoAtualizaDTO dados) {
+        professorService.buscarFormacao(formacaoId);
         var formacao = formacaoRepository.getReferenceById(formacaoId);
         formacao.atualizarFormacao(dados);
 
