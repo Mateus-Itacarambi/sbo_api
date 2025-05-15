@@ -2,10 +2,7 @@ package ifb.sbo.api.domain.area_interesse;
 
 import ifb.sbo.api.domain.professor.Professor;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,6 +10,7 @@ import java.util.List;
 @Table(name = "area_interesse")
 @Entity(name = "AreaInteresse")
 @Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode(of = "id")

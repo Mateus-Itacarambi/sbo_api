@@ -138,7 +138,7 @@ public class ProfessorController {
             ByteArrayResource csvRelatorio = professorService.importarProfessoresComRelatorioCsv(file);
 
             return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=relatorio_importacao.csv")
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=relatorio_importacao_professores.csv")
                     .contentType(MediaType.parseMediaType("text/csv"))
                     .contentLength(csvRelatorio.contentLength())
                     .body(csvRelatorio);

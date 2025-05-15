@@ -3,13 +3,21 @@ package ifb.sbo.api.controller;
 import ifb.sbo.api.domain.area_interesse.*;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
+
+import java.io.IOException;
 
 @RestController
 @RequestMapping("areasInteresse")
@@ -61,5 +69,21 @@ public class AreaInteresseController {
     @GetMapping("{id}")
     public ResponseEntity <AreaInteresseListagemDTO> detalhar (@PathVariable Long id) {
         return ResponseEntity.ok(areaInteresseService.detalhar(id));
+    }
+
+    @PostMapping("/importar-relatorio-csv")
+    public ResponseEntity<Resource> importarAreaInteresseRelatorioCsv(@RequestParam("file") MultipartFile file) {
+        try {
+            ByteArrayResource csvRelatorio = areaInteresseService.importarAreasInteresse(file);
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=relatorio_importacao_area_interesse.csv")
+                    .contentType(MediaType.parseMediaType("text/csv"))
+                    .contentLength(csvRelatorio.contentLength())
+                    .body(csvRelatorio);
+
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 }

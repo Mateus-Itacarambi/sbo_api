@@ -12,4 +12,6 @@ public interface AreaInteresseRepository extends JpaRepository<AreaInteresse, Lo
     Optional <AreaInteresse> findByIdAndAtivoTrue(Long areaInteresseId);
 
     int countByNomeAndAtivoTrue(String nome);
+
+    boolean existsByNome(String nome);
 }

@@ -317,6 +317,7 @@ public class ProfessorService {
         List<AreaInteresseDetalhaDTO> areasInteresseDTO = professor.getAreasInteresse()
                 .stream()
                 .map(areaInteresse -> new AreaInteresseDetalhaDTO(
+                        areaInteresse.getId(),
                         areaInteresse.getNome())).toList();
 
         List<FormacaoDetalhaDTO> formacoesDTO = professor.getFormacoes()
