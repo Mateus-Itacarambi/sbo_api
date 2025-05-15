@@ -22,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
+import java.util.List;
 
 @RestController
 @RequestMapping("professores")
@@ -77,13 +78,23 @@ public class ProfessorController {
         return ResponseEntity.ok(professor);
     }
 
-    @PostMapping("/{professorId}/adicionarAreaInteresse/{areaInteresseId}")
-    public ResponseEntity<ProfessorListagemDTO> adicionarAreaDeInteresse(@PathVariable Long professorId, @PathVariable Long areaInteresseId, UriComponentsBuilder uriBuilder) {
-        professorService.adicionarAreaInteresse(professorId, areaInteresseId);
+//    @PostMapping("/{professorId}/adicionarAreaInteresse/{areaInteresseId}")
+//    public ResponseEntity<ProfessorListagemDTO> adicionarAreaDeInteresse(@PathVariable Long professorId, @PathVariable Long areaInteresseId, UriComponentsBuilder uriBuilder) {
+//        professorService.adicionarAreaInteresse(professorId, areaInteresseId);
+//
+//        var uri = uriBuilder.path("/professores/{id}").buildAndExpand(professorId).toUri();
+//        return ResponseEntity.created(uri).body(professorService.detalharProfessor(professorId));
+//    }
 
-        var uri = uriBuilder.path("/professores/{id}").buildAndExpand(professorId).toUri();
-        return ResponseEntity.created(uri).body(professorService.detalharProfessor(professorId));
+    @PostMapping("/{professorId}/adicionarAreasInteresse")
+    public ResponseEntity<ProfessorListagemDTO> adicionarAreasInteresse(
+            @PathVariable Long professorId,
+            @RequestBody List<Long> idsAreas
+    ) {
+        professorService.adicionarAreasInteresse(professorId, idsAreas);
+        return ResponseEntity.ok(professorService.detalharProfessor(professorId));
     }
+
 
     @DeleteMapping("/{professorId}/removerAreaInteresse/{areaInteresseId}")
     public ResponseEntity removerAreaInteresse(@PathVariable Long professorId, @PathVariable Long areaInteresseId) {

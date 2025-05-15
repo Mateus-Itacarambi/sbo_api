@@ -18,6 +18,8 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
+import java.util.Comparator;
+import java.util.List;
 
 @RestController
 @RequestMapping("areasInteresse")
@@ -40,6 +42,14 @@ public class AreaInteresseController {
     public ResponseEntity<Page<AreaInteresseListagemDTO>> listar(@PageableDefault(size = 10, sort = {"nome"}) Pageable paginacao) {
         var page = repository.findAllByAtivoTrue(paginacao).map(AreaInteresseListagemDTO::new);
         return ResponseEntity.ok(page);
+    }
+
+    @GetMapping("/lista")
+    public List<AreaInteresseListagemDTO> listarAtivas() {
+        return repository.findByAtivoTrue().stream()
+                .map(area -> new AreaInteresseListagemDTO(area.getId(), area.getNome()))
+                .sorted(Comparator.comparing(AreaInteresseListagemDTO::nome))
+                .toList();
     }
 
     @PutMapping

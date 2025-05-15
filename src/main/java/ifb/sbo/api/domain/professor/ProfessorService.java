@@ -76,17 +76,28 @@ public class ProfessorService {
         return mapearParaDTO(professor);
     }
 
+//    @Transactional
+//    public void adicionarAreaInteresse(Long professorId, Long areaInteresseId) {
+//        Professor professor = buscarProfessor(professorId);
+//        AreaInteresse areaInteresse = buscarAreaInteresse(areaInteresseId);
+//
+//        if (professor.getAreasInteresse().contains(areaInteresse)) {
+//            throw new ConflitoException("Esta área de interesse já foi adicionada ao professor.");
+//        }
+//
+//        professor.getAreasInteresse().add(areaInteresse);
+//    }
+
     @Transactional
-    public void adicionarAreaInteresse(Long professorId, Long areaInteresseId) {
+    public void adicionarAreasInteresse(Long professorId, List<Long> idsAreas) {
         Professor professor = buscarProfessor(professorId);
-        AreaInteresse areaInteresse = buscarAreaInteresse(areaInteresseId);
 
-        if (professor.getAreasInteresse().contains(areaInteresse)) {
-            throw new ConflitoException("Esta área de interesse já foi adicionada ao professor.");
-        }
+        List<AreaInteresse> areas = areaInteresseRepository.findByIdIn(idsAreas);
 
-        professor.getAreasInteresse().add(areaInteresse);
+        professor.setAreasInteresse(areas);
+        professorRepository.save(professor);
     }
+
 
     @Transactional
     public void removerAreaInteresse(Long professorId, Long areaInteresseId) {
