@@ -82,6 +82,11 @@ public class EstudanteService {
         return mapearParaDTO(estudante);
     }
 
+    public EstudanteResumoDTO resumoEstudante(Long estudanteId) {
+        var estudante = buscarEstudante(estudanteId);
+        return mapearParaResumoDTO(estudante);
+    }
+
     private Curso buscarCurso(Long cursoId) {
         return cursoRepository.findByIdAndAtivoTrue(cursoId)
                 .orElseThrow(() -> new EntityNotFoundException("Curso não encontrado!"));
@@ -114,6 +119,17 @@ public class EstudanteService {
         if (estudante.getTema() == null) {
             throw new ConflitoException("Este estudante precisa ser associado a um tema.");
         }
+    }
+
+    public EstudanteResumoDTO mapearParaResumoDTO(Estudante estudante) {
+        return new EstudanteResumoDTO(
+                estudante.getId(),
+                estudante.getNome(),
+                estudante.getRole().toString(),
+                estudante.getAtivo(),
+                estudante.getCadastroCompleto(),
+                estudante.getMatricula()
+        );
     }
 
     public EstudanteListagemDTO mapearParaDTO(Estudante estudante) {

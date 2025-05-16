@@ -106,4 +106,29 @@ public class AutenticacaoController {
         }
     }
 
+    @GetMapping("/resumo")
+    public ResponseEntity<?> getUserResumo(@CookieValue(name = "token", required = false) String token) {
+        if (token == null || token.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token ausente.");
+        }
+
+        try {
+            String email = tokenService.getSubject(token);
+
+            Usuario usuario = usuarioRepository.findByEmailAndAtivoTrue(email);
+
+            if (usuario instanceof Estudante estudante) {
+                return ResponseEntity.ok(estudanteService.resumoEstudante(estudante.getId()));
+            } else if (usuario instanceof Professor professor) {
+                return ResponseEntity.ok(professorService.resumoProfessor(professor.getId()));
+            } else if (usuario.getRole() == TipoUsuario.ADMINISTRADOR) {
+                return ResponseEntity.ok(usuarioService.detalharUsuario(usuario.getId()));
+            } else {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuário não encontrado.");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token inválido ou expirado.");
+        }
+    }
+
 }

@@ -6,7 +6,9 @@ import ifb.sbo.api.domain.area_interesse.AreaInteresseRepository;
 import ifb.sbo.api.domain.curso.Curso;
 import ifb.sbo.api.domain.curso.CursoDetalhaDTO;
 import ifb.sbo.api.domain.curso.CursoRepository;
+import ifb.sbo.api.domain.estudante.Estudante;
 import ifb.sbo.api.domain.estudante.EstudanteDetalhaDTO;
+import ifb.sbo.api.domain.estudante.EstudanteResumoDTO;
 import ifb.sbo.api.domain.formacao.Formacao;
 import ifb.sbo.api.domain.formacao.FormacaoCadastroDTO;
 import ifb.sbo.api.domain.formacao.FormacaoDetalhaDTO;
@@ -98,7 +100,6 @@ public class ProfessorService {
         professorRepository.save(professor);
     }
 
-
     @Transactional
     public void removerAreaInteresse(Long professorId, Long areaInteresseId) {
         Professor professor = buscarProfessor(professorId);
@@ -111,16 +112,26 @@ public class ProfessorService {
         professor.getAreasInteresse().remove(areaInteresse);
     }
 
+//    @Transactional
+//    public void adicionarCurso(Long professorId, Long cursoId) {
+//        Professor professor = buscarProfessor(professorId);
+//        Curso curso = buscarCurso(cursoId);
+//
+//        if (professor.getCursos().contains(curso)) {
+//            throw new ConflitoException("Este curso já foi adicionado ao professor.");
+//        }
+//
+//        professor.getCursos().add(curso);
+//    }
+
     @Transactional
-    public void adicionarCurso(Long professorId, Long cursoId) {
+    public void adicionarCursos(Long professorId, List<Long> idsCursos) {
         Professor professor = buscarProfessor(professorId);
-        Curso curso = buscarCurso(cursoId);
 
-        if (professor.getCursos().contains(curso)) {
-            throw new ConflitoException("Este curso já foi adicionado ao professor.");
-        }
+        List<Curso> cursos = cursoRepository.findByIdIn(idsCursos);
 
-        professor.getCursos().add(curso);
+        professor.setCursos(cursos);
+        professorRepository.save(professor);
     }
 
     @Transactional
@@ -292,6 +303,11 @@ public class ProfessorService {
         return mapearParaDTO(professor);
     }
 
+    public ProfessorResumoDTO resumoProfessor(Long professorId) {
+        Professor professor = buscarProfessor(professorId);
+        return mapearParaResumoDTO(professor);
+    }
+
     public Professor buscarProfessor(Long professorId) {
         return professorRepository.findByIdAndAtivoTrue(professorId)
                 .orElseThrow(() -> new EntityNotFoundException("Professor não encontrado."));
@@ -316,6 +332,17 @@ public class ProfessorService {
         if (professorRepository.countByIdLattes(idLattes) != 0) {
             throw new ConflitoException("Lattes já cadastrado no sistema!");
         }
+    }
+
+    public ProfessorResumoDTO mapearParaResumoDTO(Professor professor) {
+        return new ProfessorResumoDTO(
+                professor.getId(),
+                professor.getNome(),
+                professor.getIdLattes(),
+                professor.getRole().toString(),
+                professor.getAtivo(),
+                professor.getCadastroCompleto()
+        );
     }
 
     private ProfessorListagemDTO mapearParaDTO(Professor professor) {

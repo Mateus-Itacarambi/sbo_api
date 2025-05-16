@@ -95,7 +95,6 @@ public class ProfessorController {
         return ResponseEntity.ok(professorService.detalharProfessor(professorId));
     }
 
-
     @DeleteMapping("/{professorId}/removerAreaInteresse/{areaInteresseId}")
     public ResponseEntity removerAreaInteresse(@PathVariable Long professorId, @PathVariable Long areaInteresseId) {
         professorService.removerAreaInteresse(professorId, areaInteresseId);
@@ -103,12 +102,21 @@ public class ProfessorController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/{professorId}/adicionarCurso/{cursoId}")
-    public ResponseEntity<ProfessorListagemDTO> adicionarCurso(@PathVariable Long professorId, @PathVariable Long cursoId, UriComponentsBuilder uriBuilder) {
-        professorService.adicionarCurso(professorId, cursoId);
+//    @PostMapping("/{professorId}/adicionarCurso/{cursoId}")
+//    public ResponseEntity<ProfessorListagemDTO> adicionarCurso(@PathVariable Long professorId, @PathVariable Long cursoId, UriComponentsBuilder uriBuilder) {
+//        professorService.adicionarCurso(professorId, cursoId);
+//
+//        var uri = uriBuilder.path("/professores/{id}").buildAndExpand(professorId).toUri();
+//        return ResponseEntity.created(uri).body(professorService.detalharProfessor(professorId));
+//    }
 
-        var uri = uriBuilder.path("/professores/{id}").buildAndExpand(professorId).toUri();
-        return ResponseEntity.created(uri).body(professorService.detalharProfessor(professorId));
+    @PostMapping("/{professorId}/adicionarCursos")
+    public ResponseEntity<ProfessorListagemDTO> adicionarCursos(
+            @PathVariable Long professorId,
+            @RequestBody List<Long> idsCursos
+    ) {
+        professorService.adicionarCursos(professorId, idsCursos);
+        return ResponseEntity.ok(professorService.detalharProfessor(professorId));
     }
 
     @DeleteMapping("/{professorId}/removerCurso/{cursoId}")

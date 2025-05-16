@@ -1,5 +1,6 @@
 package ifb.sbo.api.controller;
 
+import ifb.sbo.api.domain.area_interesse.AreaInteresseListagemDTO;
 import ifb.sbo.api.domain.curso.*;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
+
+import java.util.Comparator;
+import java.util.List;
 
 @RestController
 @RequestMapping("cursos")
@@ -33,6 +37,14 @@ public class CursoController {
     public ResponseEntity<Page<CursoListagemDTO>> listar(@PageableDefault(sort = {"nome"}) Pageable paginacao) {
         var page = repository.findAllByAtivoTrue(paginacao).map(CursoListagemDTO::new);
         return ResponseEntity.ok(page);
+    }
+
+    @GetMapping("/lista")
+    public List<CursoListagemProfessorDTO> listarAtivas() {
+        return repository.findByAtivoTrue().stream()
+                .map(curso -> new CursoListagemProfessorDTO(curso.getId(), curso.getNome()))
+                .sorted(Comparator.comparing(CursoListagemProfessorDTO::nome))
+                .toList();
     }
 
     @PutMapping
