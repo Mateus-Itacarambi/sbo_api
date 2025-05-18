@@ -1,5 +1,8 @@
 package ifb.sbo.api.domain.professor;
 
+import ifb.sbo.api.domain.area_interesse.AreaInteresse;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -28,7 +31,8 @@ public class ProfessorSpecification {
             }
 
             if (filtro.getAreaInteresse() != null && !filtro.getAreaInteresse().isEmpty()) {
-                predicates.add(cb.equal(root.join("areasInteresse").get("nome"), filtro.getAreaInteresse()));
+                Join<Professor, AreaInteresse> join = root.join("areasInteresse", JoinType.INNER);
+                predicates.add(join.get("nome").in(filtro.getAreaInteresse()));
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));

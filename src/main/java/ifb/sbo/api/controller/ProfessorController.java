@@ -56,7 +56,7 @@ public class ProfessorController {
             @RequestParam(required = false) String nome,
             @RequestParam(required = false) String curso,
             @RequestParam(required = false) String disponibilidade,
-            @RequestParam(required = false) String areaInteresse,
+            @RequestParam(required = false) List<String> areaInteresse,
             Pageable pageable
     ) {
         FiltroProfessor filtro = new FiltroProfessor(nome, curso, disponibilidade, areaInteresse);
