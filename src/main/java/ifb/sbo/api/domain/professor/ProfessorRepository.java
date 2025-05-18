@@ -1,17 +1,23 @@
 package ifb.sbo.api.domain.professor;
 
+import jakarta.annotation.Nullable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Range;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
 public interface ProfessorRepository extends JpaRepository<Professor, Long> {
-    Page<Professor> findAllByAtivoTrue(Pageable paginacao);
+    Page<Professor> findAllByAtivoTrueAndCadastroCompletoTrue(Pageable paginacao);
 
     int countByIdLattes(String idLattes);
 
     Optional<Professor> findByIdAndAtivoTrue(Long professorId);
 
     Optional<Professor> findByIdLattesAndAtivoTrueAndCadastroCompletoTrue(String identificador);
+
+    Page<Professor> findAll(@Nullable Specification<Professor> spec, Pageable pageable);
+
 }

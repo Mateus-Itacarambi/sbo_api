@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -294,7 +295,15 @@ public class ProfessorService {
     }
 
     public Page<ProfessorListagemDTO> listarProfessoresPaginados(@PageableDefault(size = 20, sort = {"nome"}) Pageable paginacao) {
-        return professorRepository.findAllByAtivoTrue(paginacao)
+        return professorRepository.findAllByAtivoTrueAndCadastroCompletoTrue(paginacao)
+                .map(this::mapearParaDTO);
+    }
+
+    public Page<ProfessorListagemDTO> listarProfessoresComFiltros(FiltroProfessor filtro, Pageable pageable) {
+        Specification<Professor> spec = ProfessorSpecification.comFiltros(filtro);
+
+        return professorRepository
+                .findAll(spec, pageable)
                 .map(this::mapearParaDTO);
     }
 

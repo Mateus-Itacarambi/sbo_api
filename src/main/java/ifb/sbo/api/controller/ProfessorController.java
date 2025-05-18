@@ -12,6 +12,7 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -44,11 +45,24 @@ public class ProfessorController {
         return ResponseEntity.created(uri).body(professor);
     }
 
+//    @GetMapping
+//    public ResponseEntity<Page<ProfessorListagemDTO>> listar(Pageable paginacao) {
+//        Page<ProfessorListagemDTO> professores = professorService.listarProfessoresPaginados(paginacao);
+//        return ResponseEntity.ok(professores);
+//    }
+
     @GetMapping
-    public ResponseEntity<Page<ProfessorListagemDTO>> listar(Pageable paginacao) {
-        Page<ProfessorListagemDTO> professores = professorService.listarProfessoresPaginados(paginacao);
-        return ResponseEntity.ok(professores);
+    public Page<ProfessorListagemDTO> listarProfessores(
+            @RequestParam(required = false) String nome,
+            @RequestParam(required = false) String curso,
+            @RequestParam(required = false) String disponibilidade,
+            @RequestParam(required = false) String areaInteresse,
+            Pageable pageable
+    ) {
+        FiltroProfessor filtro = new FiltroProfessor(nome, curso, disponibilidade, areaInteresse);
+        return professorService.listarProfessoresComFiltros(filtro, pageable);
     }
+
 
     @PutMapping
     @Transactional
