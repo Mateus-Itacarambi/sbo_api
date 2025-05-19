@@ -54,8 +54,8 @@ public class ProfessorController {
     @GetMapping
     public Page<ProfessorListagemDTO> listarProfessores(
             @RequestParam(required = false) String nome,
-            @RequestParam(required = false) String curso,
-            @RequestParam(required = false) String disponibilidade,
+            @RequestParam(required = false) List<String> curso,
+            @RequestParam(required = false) List<String> disponibilidade,
             @RequestParam(required = false) List<String> areaInteresse,
             Pageable pageable
     ) {

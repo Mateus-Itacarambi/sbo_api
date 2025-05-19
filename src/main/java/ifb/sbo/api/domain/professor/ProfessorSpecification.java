@@ -1,6 +1,7 @@
 package ifb.sbo.api.domain.professor;
 
 import ifb.sbo.api.domain.area_interesse.AreaInteresse;
+import ifb.sbo.api.domain.curso.Curso;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
@@ -8,6 +9,7 @@ import org.springframework.data.jpa.domain.Specification;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class ProfessorSpecification {
 
@@ -23,11 +25,30 @@ public class ProfessorSpecification {
             }
 
             if (filtro.getCurso() != null && !filtro.getCurso().isEmpty()) {
-                predicates.add(cb.equal(root.join("cursos").get("nome"), filtro.getCurso()));
+                Join<Professor, Curso> join = root.join("cursos", JoinType.INNER);
+                predicates.add(join.get("nome").in(filtro.getCurso()));
             }
 
+//            if (filtro.getDisponibilidade() != null && !filtro.getDisponibilidade().isEmpty()) {
+//                predicates.add(cb.equal(root.get("disponibilidade"), filtro.getDisponibilidade()));
+//            }
+
             if (filtro.getDisponibilidade() != null && !filtro.getDisponibilidade().isEmpty()) {
-                predicates.add(cb.equal(root.get("disponibilidade"), filtro.getDisponibilidade()));
+                List<Disponibilidade> disponiveisValidos = filtro.getDisponibilidade().stream()
+                        .map(String::toUpperCase)
+                        .map(val -> {
+                            try {
+                                return Disponibilidade.valueOf(val);
+                            } catch (IllegalArgumentException e) {
+                                return null;
+                            }
+                        })
+                        .filter(Objects::nonNull)
+                        .toList();
+
+                if (!disponiveisValidos.isEmpty()) {
+                    predicates.add(root.get("disponibilidade").in(disponiveisValidos));
+                }
             }
 
             if (filtro.getAreaInteresse() != null && !filtro.getAreaInteresse().isEmpty()) {

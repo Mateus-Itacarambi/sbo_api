@@ -9,8 +9,8 @@ import java.util.List;
 @AllArgsConstructor
 public class FiltroProfessor {
     private String nome;
-    private String curso;
-    private String disponibilidade;
+    private List<String> curso;
+    private List<String> disponibilidade;
     private List<String> areaInteresse;
 }
 
