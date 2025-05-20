@@ -1,6 +1,7 @@
 package ifb.sbo.api.controller;
 
 import ifb.sbo.api.domain.estudante.EstudanteListagemDTO;
+import ifb.sbo.api.domain.professor.FiltroProfessor;
 import ifb.sbo.api.domain.professor.ProfessorListagemDTO;
 import ifb.sbo.api.domain.tema.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
+
+import java.util.List;
 
 
 @RestController
@@ -35,10 +38,20 @@ public class TemaController {
         return ResponseEntity.created(uri).body(estudante);
     }
 
+//    @GetMapping
+//    public ResponseEntity<Page<TemaListagemDTO>> listarTemas(Pageable paginacao) {
+//        Page<TemaListagemDTO> temas = temaService.listarTemasPaginados(paginacao);
+//        return ResponseEntity.ok(temas);
+//    }
+
     @GetMapping
-    public ResponseEntity<Page<TemaListagemDTO>> listarTemas(Pageable paginacao) {
-        Page<TemaListagemDTO> temas = temaService.listarTemasPaginados(paginacao);
-        return ResponseEntity.ok(temas);
+    public Page<TemaListagemDTO> listarTemas(
+            @RequestParam(required = false) String titulo,
+            @RequestParam(required = false) List<String> professor,
+            Pageable pageable
+    ) {
+        TemaFiltro filtro = new TemaFiltro(titulo, professor);
+        return temaService.listarTemasComFiltros(filtro, pageable);
     }
 
     @GetMapping("/professor/{professorId}")

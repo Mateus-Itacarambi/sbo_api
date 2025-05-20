@@ -1,6 +1,7 @@
 package ifb.sbo.api.controller;
 
 
+import ifb.sbo.api.domain.area_interesse.AreaInteresseListagemDTO;
 import ifb.sbo.api.domain.formacao.FormacaoAtualizaDTO;
 import ifb.sbo.api.domain.formacao.FormacaoCadastroDTO;
 import ifb.sbo.api.domain.formacao.FormacaoListagemDTO;
@@ -23,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.List;
 
 @RestController
@@ -52,7 +54,7 @@ public class ProfessorController {
 //    }
 
     @GetMapping
-    public Page<ProfessorListagemDTO> listarProfessores(
+    public Page<ProfessorBuscaDTO> listarProfessores(
             @RequestParam(required = false) String nome,
             @RequestParam(required = false) List<String> curso,
             @RequestParam(required = false) List<String> disponibilidade,
@@ -63,6 +65,14 @@ public class ProfessorController {
         return professorService.listarProfessoresComFiltros(filtro, pageable);
     }
 
+
+    @GetMapping("/lista")
+    public List<ProfessorListaDTO> listarAtivas() {
+        return professorRepository.findByAtivoTrueAndCadastroCompletoTrue().stream()
+                .map(professor -> new ProfessorListaDTO(professor.getId(), professor.getNome()))
+                .sorted(Comparator.comparing(ProfessorListaDTO::nome))
+                .toList();
+    }
 
     @PutMapping
     @Transactional

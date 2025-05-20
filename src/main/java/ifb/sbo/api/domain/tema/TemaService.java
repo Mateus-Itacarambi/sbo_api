@@ -11,6 +11,7 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -81,8 +82,16 @@ public class TemaService {
         return professorService.detalharProfessor(professorId);
     }
 
-    public Page<TemaListagemDTO> listarTemasPaginados(@PageableDefault(size = 20, sort = {"nome"}) Pageable paginacao) {
-        return temaRepository.findAllByStatusDisponivel(paginacao)
+//    public Page<TemaListagemDTO> listarTemasPaginados(@PageableDefault(size = 20, sort = {"nome"}) Pageable paginacao) {
+//        return temaRepository.findAllByStatusDisponivel(paginacao)
+//                .map(this::mapearParaDTO);
+//    }
+
+    public Page<TemaListagemDTO> listarTemasComFiltros(TemaFiltro filtro, Pageable pageable) {
+        Specification<Tema> spec = TemaSpecification.comFiltros(filtro);
+
+        return temaRepository
+                .findAll(spec, pageable)
                 .map(this::mapearParaDTO);
     }
 
@@ -185,20 +194,11 @@ public class TemaService {
     }
 
     private TemaListagemDTO mapearParaDTO(Tema tema) {
-        List<EstudanteListagemTemaDTO> estudantesDTO = tema.getEstudantes()
+        List<EstudanteDetalhaDTO> estudantesDTO = tema.getEstudantes()
                 .stream()
-                .map(estudante -> new EstudanteListagemTemaDTO(
+                .map(estudante -> new EstudanteDetalhaDTO(
                         estudante.getId(),
-                        estudante.getNome(),
-                        estudante.getDataNascimento(),
-                        estudante.getGenero(),
-                        estudante.getEmail(),
-                        estudante.getMatricula(),
-                        estudante.getSemestre(),
-                        new CursoDetalhaDTO(
-                                estudante.getCurso().getId(),
-                                estudante.getCurso().getNome()
-                        )
+                        estudante.getNome()
                 ))
                 .toList();
 

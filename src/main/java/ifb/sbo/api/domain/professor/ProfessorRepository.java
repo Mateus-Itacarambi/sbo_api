@@ -7,6 +7,7 @@ import org.springframework.data.domain.Range;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface ProfessorRepository extends JpaRepository<Professor, Long> {
@@ -20,4 +21,5 @@ public interface ProfessorRepository extends JpaRepository<Professor, Long> {
 
     Page<Professor> findAll(@Nullable Specification<Professor> spec, Pageable pageable);
 
+    List<Professor> findByAtivoTrueAndCadastroCompletoTrue();
 }

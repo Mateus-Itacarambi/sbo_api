@@ -299,12 +299,12 @@ public class ProfessorService {
                 .map(this::mapearParaDTO);
     }
 
-    public Page<ProfessorListagemDTO> listarProfessoresComFiltros(FiltroProfessor filtro, Pageable pageable) {
+    public Page<ProfessorBuscaDTO> listarProfessoresComFiltros(FiltroProfessor filtro, Pageable pageable) {
         Specification<Professor> spec = ProfessorSpecification.comFiltros(filtro);
 
         return professorRepository
                 .findAll(spec, pageable)
-                .map(this::mapearParaDTO);
+                .map(this::mapearParaListaDTO);
     }
 
     public ProfessorListagemDTO detalharProfessor(Long professorId) {
@@ -351,6 +351,30 @@ public class ProfessorService {
                 professor.getRole().toString(),
                 professor.getAtivo(),
                 professor.getCadastroCompleto()
+        );
+    }
+
+    public ProfessorBuscaDTO mapearParaListaDTO(Professor professor) {
+        List<CursoDetalhaDTO> cursosDTO = professor.getCursos()
+                .stream()
+                .map(curso -> new CursoDetalhaDTO(
+                        curso.getId(),
+                        curso.getNome())).toList();
+
+        List<AreaInteresseDetalhaDTO> areasInteresseDTO = professor.getAreasInteresse()
+                .stream()
+                .map(areaInteresse -> new AreaInteresseDetalhaDTO(
+                        areaInteresse.getId(),
+                        areaInteresse.getNome())).toList();
+
+        return new ProfessorBuscaDTO(
+                professor.getId(),
+                professor.getNome(),
+                professor.getEmail(),
+                professor.getIdLattes(),
+                String.valueOf(professor.getDisponibilidade()),
+                cursosDTO,
+                areasInteresseDTO
         );
     }
 
