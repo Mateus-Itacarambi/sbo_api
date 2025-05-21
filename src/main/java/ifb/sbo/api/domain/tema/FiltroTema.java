@@ -7,7 +7,8 @@ import java.util.List;
 
 @Getter
 @AllArgsConstructor
-public class TemaFiltro {
+public class FiltroTema {
     private String titulo;
+    private List<String> palavrasChave;
     private List<String> professor;
 }

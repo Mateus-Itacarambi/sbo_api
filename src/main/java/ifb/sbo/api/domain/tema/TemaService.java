@@ -1,10 +1,8 @@
 package ifb.sbo.api.domain.tema;
 
 
-import ifb.sbo.api.domain.curso.CursoDetalhaDTO;
 import ifb.sbo.api.domain.estudante.*;
 import ifb.sbo.api.domain.professor.*;
-import ifb.sbo.api.domain.usuario.Usuario;
 import ifb.sbo.api.domain.usuario.UsuarioService;
 import ifb.sbo.api.infra.exception.ConflitoException;
 import jakarta.persistence.EntityNotFoundException;
@@ -13,12 +11,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -87,11 +79,9 @@ public class TemaService {
 //                .map(this::mapearParaDTO);
 //    }
 
-    public Page<TemaListagemDTO> listarTemasComFiltros(TemaFiltro filtro, Pageable pageable) {
+    public Page<TemaListagemDTO> listarTemasComFiltros(FiltroTema filtro, Pageable pageable) {
         Specification<Tema> spec = TemaSpecification.comFiltros(filtro);
-
-        return temaRepository
-                .findAll(spec, pageable)
+        return temaRepository.findAll(spec, pageable)
                 .map(this::mapearParaDTO);
     }
 

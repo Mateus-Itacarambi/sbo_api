@@ -1,16 +1,12 @@
 package ifb.sbo.api.controller;
 
 import ifb.sbo.api.domain.estudante.EstudanteListagemDTO;
-import ifb.sbo.api.domain.professor.FiltroProfessor;
 import ifb.sbo.api.domain.professor.ProfessorListagemDTO;
 import ifb.sbo.api.domain.tema.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -47,10 +43,11 @@ public class TemaController {
     @GetMapping
     public Page<TemaListagemDTO> listarTemas(
             @RequestParam(required = false) String titulo,
+            @RequestParam(required = false) List<String> palavrasChave,
             @RequestParam(required = false) List<String> professor,
             Pageable pageable
     ) {
-        TemaFiltro filtro = new TemaFiltro(titulo, professor);
+        FiltroTema filtro = new FiltroTema(titulo, palavrasChave, professor);
         return temaService.listarTemasComFiltros(filtro, pageable);
     }
 

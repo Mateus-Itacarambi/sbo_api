@@ -6,12 +6,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
 
-public interface TemaRepository extends JpaRepository<Tema, Long> {
+public interface TemaRepository extends JpaRepository<Tema, Long>, JpaSpecificationExecutor<Tema> {
     @Query("SELECT t FROM Tema t WHERE t.status = 'Disponível'")
     Page<Tema> findAllByStatusDisponivel(Pageable paginacao);
 
