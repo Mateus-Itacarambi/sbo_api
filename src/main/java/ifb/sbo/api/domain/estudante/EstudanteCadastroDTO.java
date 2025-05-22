@@ -26,7 +26,6 @@ public record EstudanteCadastroDTO(
         @Min(1)
         Long idCurso
 ) {
-
         public boolean isMaiorDeIdade() {
                 return Period.between(this.dataNascimento, LocalDate.now()).getYears() >= 18;
         }

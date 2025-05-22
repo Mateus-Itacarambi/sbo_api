@@ -24,11 +24,11 @@ public class TratadorDeErros {
                 .body("Usuário ou senha inválidos. Verifique suas credenciais.");
     }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity TratarErro400(MethodArgumentNotValidException ex) {
-        var erros = ex.getFieldErrors();
-        return ResponseEntity.badRequest().body(erros.stream().map(DadosErroValidacao::new).toList());
-    }
+//    @ExceptionHandler(MethodArgumentNotValidException.class)
+//    public ResponseEntity TratarErro400(MethodArgumentNotValidException ex) {
+//        var erros = ex.getFieldErrors();
+//        return ResponseEntity.badRequest().body(erros.stream().map(DadosErroValidacao::new).toList());
+//    }
 
     @ExceptionHandler(ConflitoException.class)
     public ResponseEntity<String> TratarErro409(ConflitoException ex) {
@@ -49,5 +49,30 @@ public class TratadorDeErros {
     @ExceptionHandler(UsernameNotFoundException.class)
     public ResponseEntity<String> handleUsernameNotFound(UsernameNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Usuário não encontrado!");
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<String> TratarErro400(MethodArgumentNotValidException ex) {
+        for (FieldError erro : ex.getFieldErrors()) {
+            switch (erro.getField()) {
+                case "nome":
+                    return ResponseEntity.badRequest().body("O campo 'nome' é obrigatório.");
+                case "dataNascimento":
+                    return ResponseEntity.badRequest().body("O campo 'data de nascimento' é obrigatório.");
+                case "genero":
+                    return ResponseEntity.badRequest().body("O campo 'gênero' é obrigatório.");
+                case "idCurso":
+                    return ResponseEntity.badRequest().body("O campo 'curso' é obrigatório.");
+                case "semestre":
+                    return ResponseEntity.badRequest().body("O campo 'semestre' é obrigatório.");
+                case "matricula":
+                    return ResponseEntity.badRequest().body("O campo 'matrícula' é obrigatório.");
+                case "email":
+                    return ResponseEntity.badRequest().body("O campo 'e-mail' é obrigatório.");
+                case "senha":
+                    return ResponseEntity.badRequest().body("O campo 'senha' é obrigatório.");
+            }
+        }
+        return ResponseEntity.badRequest().body("Erro de validação no formulário.");
     }
 }

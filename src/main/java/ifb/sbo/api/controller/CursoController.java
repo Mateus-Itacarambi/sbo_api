@@ -42,7 +42,7 @@ public class CursoController {
     @GetMapping("/lista")
     public List<CursoListagemProfessorDTO> listarAtivas() {
         return repository.findByAtivoTrue().stream()
-                .map(curso -> new CursoListagemProfessorDTO(curso.getId(), curso.getNome()))
+                .map(curso -> new CursoListagemProfessorDTO(curso.getId(), curso.getNome(), curso.getSemestres()))
                 .sorted(Comparator.comparing(CursoListagemProfessorDTO::nome))
                 .toList();
     }
