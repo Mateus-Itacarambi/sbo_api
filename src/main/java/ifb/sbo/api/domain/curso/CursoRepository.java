@@ -22,4 +22,8 @@ public interface CursoRepository extends JpaRepository<Curso, Long> {
     List<Curso> findByAtivoTrue();
 
     List<Curso> findByIdIn(List<Long> idsCursos);
+
+    Optional<Curso> findByNomeIgnoreCase(String nome);
+
+    int countBySiglaAndAtivoTrue(String sigla);
 }

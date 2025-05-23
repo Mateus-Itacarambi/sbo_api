@@ -2,6 +2,7 @@ package ifb.sbo.api.domain.curso;
 
 import ifb.sbo.api.domain.estudante.Estudante;
 import ifb.sbo.api.domain.professor.Professor;
+import ifb.sbo.api.infra.service.SlugUtils;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -32,6 +33,7 @@ public class Curso {
     private List<Estudante> estudantes = new ArrayList<>();
     @ManyToMany(mappedBy = "cursos", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Professor> professores = new ArrayList<>();
+    private String slug;
 
     public Curso(CursoCadastroDTO dados) {
         this.nome = dados.nome();
@@ -39,6 +41,7 @@ public class Curso {
         this.descricao = dados.descricao();
         this.semestres = dados.semestres();
         this.ativo = true;
+        this.slug = SlugUtils.toSlug(getNome());
     }
 
     public void atualizarInformacoes(CursoAtualizaDTO dados) {

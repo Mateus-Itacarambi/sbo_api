@@ -2,14 +2,17 @@ package ifb.sbo.api.controller;
 
 import ifb.sbo.api.domain.area_interesse.AreaInteresseListagemDTO;
 import ifb.sbo.api.domain.curso.*;
+import ifb.sbo.api.infra.service.SlugUtils;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Comparator;
@@ -33,11 +36,11 @@ public class CursoController {
         return ResponseEntity.created(uri).body(curso);
     }
 
-    @GetMapping
-    public ResponseEntity<Page<CursoListagemDTO>> listar(@PageableDefault(sort = {"nome"}) Pageable paginacao) {
-        var page = repository.findAllByAtivoTrue(paginacao).map(CursoListagemDTO::new);
-        return ResponseEntity.ok(page);
-    }
+//    @GetMapping
+//    public ResponseEntity<Page<CursoListagemDTO>> listar(@PageableDefault(sort = {"nome"}) Pageable paginacao) {
+//        var page = repository.findAllByAtivoTrue(paginacao).map(CursoListagemDTO::new);
+//        return ResponseEntity.ok(page);
+//    }
 
     @GetMapping("/lista")
     public List<CursoListagemProfessorDTO> listarAtivas() {
@@ -52,7 +55,7 @@ public class CursoController {
     public ResponseEntity atualizar(@RequestBody @Valid CursoAtualizaDTO dados) {
         var curso = repository.getReferenceById(dados.id());
         curso.atualizarInformacoes(dados);
-        return ResponseEntity.ok(new CursoListagemDTO(curso));
+        return ResponseEntity.ok(cursoService.mapearParaDTO(curso));
     }
 
     @DeleteMapping("/{id}")
@@ -68,11 +71,23 @@ public class CursoController {
     public ResponseEntity ativar(@PathVariable Long id) {
         var curso = repository.getReferenceById(id);
         curso.ativar();
-        return ResponseEntity.ok(new CursoListagemDTO(curso));
+        return ResponseEntity.ok(cursoService.mapearParaDTO(curso));
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<CursoListagemDTO> detalhar(@PathVariable Long id) {
-        return ResponseEntity.ok(cursoService.detalhar(id));
+//    @GetMapping("/{id}")
+//    public ResponseEntity<CursoListagemDTO> detalhar(@PathVariable Long id) {
+//        return ResponseEntity.ok(cursoService.detalhar(id));
+//    }
+
+    @GetMapping("/{slug}")
+    public ResponseEntity<CursoListagemDTO> buscarPorSlug(@PathVariable String slug) {
+        List<Curso> cursos = repository.findAll();
+
+        Curso curso = cursos.stream()
+                .filter(c -> SlugUtils.toSlug(c.getNome()).equals(slug))
+                .findFirst()
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        return ResponseEntity.ok(cursoService.mapearParaDTO(curso));
     }
 }

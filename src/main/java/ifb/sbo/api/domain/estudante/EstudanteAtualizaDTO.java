@@ -16,9 +16,6 @@ public record EstudanteAtualizaDTO(
         @NotBlank
         String genero,
         @NotBlank
-        String email,
-        String senha,
-        @NotBlank
         String matricula,
         @NotNull
         Long curso,

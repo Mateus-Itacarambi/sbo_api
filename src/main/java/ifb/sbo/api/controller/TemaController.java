@@ -3,6 +3,7 @@ package ifb.sbo.api.controller;
 import ifb.sbo.api.domain.estudante.EstudanteListagemDTO;
 import ifb.sbo.api.domain.professor.ProfessorListagemDTO;
 import ifb.sbo.api.domain.tema.*;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,7 +21,7 @@ public class TemaController {
     private TemaService temaService;
 
     @PostMapping("/professor/{professorId}")
-    public ResponseEntity<ProfessorListagemDTO> criarTemaProfessor(@PathVariable Long professorId, @RequestBody TemaCadastroDTO dados, UriComponentsBuilder uriBuilder) {
+    public ResponseEntity<ProfessorListagemDTO> criarTemaProfessor(@PathVariable Long professorId, @RequestBody @Valid TemaCadastroDTO dados, UriComponentsBuilder uriBuilder) {
         var professor = temaService.criarTemaProfessor(professorId, dados);
 
         var uri = uriBuilder.path("/professores/{id}").buildAndExpand(professorId).toUri();
@@ -28,7 +29,7 @@ public class TemaController {
     }
 
     @PostMapping("/estudante/{estudanteId}")
-    public ResponseEntity<?> criarTemaEstudante(@PathVariable Long estudanteId, @RequestBody TemaCadastroDTO dados, UriComponentsBuilder uriBuilder) {
+    public ResponseEntity<?> criarTemaEstudante(@PathVariable Long estudanteId, @RequestBody @Valid TemaCadastroDTO dados, UriComponentsBuilder uriBuilder) {
         var estudante = temaService.criarTemaEstudante(estudanteId, dados);
         var uri = uriBuilder.path("/estudantes/{id}").buildAndExpand(estudanteId).toUri();
         return ResponseEntity.created(uri).body(estudante);
@@ -63,7 +64,7 @@ public class TemaController {
     }
 
     @PutMapping("/{temaId}/atualizar/{usuarioId}")
-    public ResponseEntity<TemaListagemDTO> atualizarTema(@PathVariable Long temaId, @PathVariable Long usuarioId, @RequestBody TemaAtualizaDTO dados) {
+    public ResponseEntity<TemaListagemDTO> atualizarTema(@PathVariable Long temaId, @PathVariable Long usuarioId, @RequestBody @Valid TemaAtualizaDTO dados) {
         var tema = temaService.atualizarTema(temaId, usuarioId, dados);
         return ResponseEntity.ok(tema);
     }

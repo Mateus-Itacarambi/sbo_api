@@ -70,14 +70,14 @@ public class Professor extends Usuario {
             super.genero = dados.genero();
         }
 
-        if (dados.email() != null) {
-            super.email = dados.email();
-        }
-
-        if (dados.senha() != null) {
-            BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-            super.senha = passwordEncoder.encode(dados.senha());
-        }
+//        if (dados.email() != null) {
+//            super.email = dados.email();
+//        }
+//
+//        if (dados.senha() != null) {
+//            BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+//            super.senha = passwordEncoder.encode(dados.senha());
+//        }
 
         if (dados.idLattes() != null) {
             this.idLattes = dados.idLattes();

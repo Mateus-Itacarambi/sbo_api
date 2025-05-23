@@ -6,13 +6,8 @@ import ifb.sbo.api.domain.area_interesse.AreaInteresseRepository;
 import ifb.sbo.api.domain.curso.Curso;
 import ifb.sbo.api.domain.curso.CursoDetalhaDTO;
 import ifb.sbo.api.domain.curso.CursoRepository;
-import ifb.sbo.api.domain.estudante.Estudante;
 import ifb.sbo.api.domain.estudante.EstudanteDetalhaDTO;
-import ifb.sbo.api.domain.estudante.EstudanteResumoDTO;
-import ifb.sbo.api.domain.formacao.Formacao;
-import ifb.sbo.api.domain.formacao.FormacaoCadastroDTO;
-import ifb.sbo.api.domain.formacao.FormacaoDetalhaDTO;
-import ifb.sbo.api.domain.formacao.FormacaoRepository;
+import ifb.sbo.api.domain.formacao.*;
 import ifb.sbo.api.domain.tema.TemaDetalhaDTO;
 import ifb.sbo.api.domain.usuario.TipoUsuario;
 import ifb.sbo.api.domain.usuario.UsuarioRepository;
@@ -153,6 +148,20 @@ public class ProfessorService {
         Formacao formacao = new Formacao(dados);
         formacao.setProfessor(professor);
         formacaoRepository.save(formacao);
+    }
+
+    @Transactional
+    public FormacaoListagemDTO atualizarFormacao(Long professorId, Long formacaoId, FormacaoAtualizaDTO dados) {
+        Professor professor = buscarProfessor(professorId);
+        Formacao formacao = buscarFormacao(formacaoId);
+
+        if (!professor.getFormacoes().contains(formacao)) {
+            throw new ConflitoException("Você não possui esta formação.");
+        }
+
+        formacao.atualizarFormacao(dados);
+
+        return new FormacaoListagemDTO(formacao);
     }
 
     @Transactional

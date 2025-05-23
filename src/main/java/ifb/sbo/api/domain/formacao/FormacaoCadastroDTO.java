@@ -1,5 +1,6 @@
 package ifb.sbo.api.domain.formacao;
 
+import ifb.sbo.api.infra.exception.ConflitoException;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
@@ -10,17 +11,17 @@ public record FormacaoCadastroDTO(
         String instituicao,
         @NotBlank
         String titulo,
-        @NotBlank
+        @NotNull
         Long anoInicio,
-        @NotBlank
+        @NotNull
         Long anoFim) {
 
         public FormacaoCadastroDTO {
                 if (anoInicio <= 0) {
-                        throw new IllegalArgumentException("Ano de início deve ser positivo.");
+                        throw new ConflitoException("Informe o ano de início corretamente.");
                 }
                 if (anoFim != null && anoFim < anoInicio) {
-                        throw new IllegalArgumentException("Ano de fim não pode ser anterior ao ano de início.");
+                        throw new ConflitoException("Ano de conclusão não pode ser anterior ao ano de início.");
                 }
         }
 }

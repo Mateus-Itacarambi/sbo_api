@@ -7,6 +7,7 @@ import ifb.sbo.api.domain.professor.ProfessorDetalhaDTO;
 import java.util.List;
 
 public record TemaListagemDTO(
+        Long id,
         String titulo,
         String descricao,
         String palavrasChave,

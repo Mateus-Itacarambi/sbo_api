@@ -1,14 +1,17 @@
 package ifb.sbo.api.domain.curso;
 
+import ifb.sbo.api.domain.professor.Professor;
+import ifb.sbo.api.domain.professor.ProfessorCursoDTO;
+
+import java.util.List;
+
+
 public record CursoListagemDTO(
         Long id,
         String nome,
         String sigla,
         String descricao,
-        Integer semestres) {
-
-    public CursoListagemDTO(Curso curso) {
-        this(curso.getId(), curso.getNome(), curso.getSigla(), curso.getDescricao(), curso.getSemestres());
-    }
-}
+        Integer semestres,
+        String slug,
+        List<ProfessorCursoDTO> professores) {}
 

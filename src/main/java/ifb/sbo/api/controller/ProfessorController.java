@@ -47,12 +47,6 @@ public class ProfessorController {
         return ResponseEntity.created(uri).body(professor);
     }
 
-//    @GetMapping
-//    public ResponseEntity<Page<ProfessorListagemDTO>> listar(Pageable paginacao) {
-//        Page<ProfessorListagemDTO> professores = professorService.listarProfessoresPaginados(paginacao);
-//        return ResponseEntity.ok(professores);
-//    }
-
     @GetMapping
     public Page<ProfessorBuscaDTO> listarProfessores(
             @RequestParam(required = false) String nome,
@@ -64,7 +58,6 @@ public class ProfessorController {
         FiltroProfessor filtro = new FiltroProfessor(nome, curso, disponibilidade, areaInteresse);
         return professorService.listarProfessoresComFiltros(filtro, pageable);
     }
-
 
     @GetMapping("/lista")
     public List<ProfessorListaDTO> listarAtivas() {
@@ -126,14 +119,6 @@ public class ProfessorController {
         return ResponseEntity.noContent().build();
     }
 
-//    @PostMapping("/{professorId}/adicionarCurso/{cursoId}")
-//    public ResponseEntity<ProfessorListagemDTO> adicionarCurso(@PathVariable Long professorId, @PathVariable Long cursoId, UriComponentsBuilder uriBuilder) {
-//        professorService.adicionarCurso(professorId, cursoId);
-//
-//        var uri = uriBuilder.path("/professores/{id}").buildAndExpand(professorId).toUri();
-//        return ResponseEntity.created(uri).body(professorService.detalharProfessor(professorId));
-//    }
-
     @PostMapping("/{professorId}/adicionarCursos")
     public ResponseEntity<ProfessorListagemDTO> adicionarCursos(
             @PathVariable Long professorId,
@@ -151,7 +136,7 @@ public class ProfessorController {
     }
 
     @PostMapping("/{professorId}/adicionarFormacoes")
-    public ResponseEntity<ProfessorListagemDTO> adicionarFormacao(@PathVariable Long professorId, @RequestBody FormacaoCadastroDTO dados, UriComponentsBuilder uriBuilder) {
+    public ResponseEntity<ProfessorListagemDTO> adicionarFormacao(@PathVariable Long professorId, @RequestBody @Valid FormacaoCadastroDTO dados, UriComponentsBuilder uriBuilder) {
         professorService.adicionarFormacao(professorId, dados);
 
         var uri = uriBuilder.path("/professores/{id}").buildAndExpand(professorId).toUri();
@@ -165,14 +150,10 @@ public class ProfessorController {
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping("/atualizarFormacoes/{formacaoId}")
+    @PutMapping("/{professorId}/atualizarFormacoes/{formacaoId}")
     @Transactional
-    public ResponseEntity<FormacaoListagemDTO> atualizarFormacao(@PathVariable Long formacaoId,  @RequestBody FormacaoAtualizaDTO dados) {
-        professorService.buscarFormacao(formacaoId);
-        var formacao = formacaoRepository.getReferenceById(formacaoId);
-        formacao.atualizarFormacao(dados);
-
-        return ResponseEntity.ok(new FormacaoListagemDTO(formacao));
+    public ResponseEntity<FormacaoListagemDTO> atualizarFormacao(@PathVariable Long professorId, @PathVariable Long formacaoId,  @RequestBody @Valid FormacaoAtualizaDTO dados) {
+        return ResponseEntity.ok(professorService.atualizarFormacao(professorId, formacaoId, dados));
     }
 
     @PostMapping("/importar-relatorio-csv")

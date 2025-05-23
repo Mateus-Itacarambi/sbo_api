@@ -58,9 +58,9 @@ public class EstudanteService {
             throw new ConflitoException("É necessário ter pelo menos 18 anos!");
         }
 
-        if (!Objects.equals(estudante.getEmail(), dados.email())) {
-            usuarioService.buscarEmail(dados.email());
-        }
+//        if (!Objects.equals(estudante.getEmail(), dados.email())) {
+//            usuarioService.buscarEmail(dados.email());
+//        }
 
         if (!Objects.equals(estudante.getMatricula(), dados.matricula())) {
             buscarMatricula(dados.matricula());

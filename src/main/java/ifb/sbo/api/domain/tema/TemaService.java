@@ -92,7 +92,6 @@ public class TemaService {
 
     @Transactional
     public TemaListagemDTO atualizarTema(Long temaId, Long usuarioId, TemaAtualizaDTO dados) {
-        System.out.println("ID TEMA: " + temaId);
         var tema = buscarTema(temaId);
 
         usuarioService.verificarUsuarioTema(usuarioId, tema);
@@ -193,6 +192,7 @@ public class TemaService {
                 .toList();
 
         return new TemaListagemDTO(
+                tema.getId(),
                 tema.getTitulo(),
                 tema.getDescricao(),
                 tema.getPalavrasChave(),

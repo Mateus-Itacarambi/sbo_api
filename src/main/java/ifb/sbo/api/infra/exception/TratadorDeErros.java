@@ -52,27 +52,8 @@ public class TratadorDeErros {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<String> TratarErro400(MethodArgumentNotValidException ex) {
-        for (FieldError erro : ex.getFieldErrors()) {
-            switch (erro.getField()) {
-                case "nome":
-                    return ResponseEntity.badRequest().body("O campo 'nome' é obrigatório.");
-                case "dataNascimento":
-                    return ResponseEntity.badRequest().body("O campo 'data de nascimento' é obrigatório.");
-                case "genero":
-                    return ResponseEntity.badRequest().body("O campo 'gênero' é obrigatório.");
-                case "idCurso":
-                    return ResponseEntity.badRequest().body("O campo 'curso' é obrigatório.");
-                case "semestre":
-                    return ResponseEntity.badRequest().body("O campo 'semestre' é obrigatório.");
-                case "matricula":
-                    return ResponseEntity.badRequest().body("O campo 'matrícula' é obrigatório.");
-                case "email":
-                    return ResponseEntity.badRequest().body("O campo 'e-mail' é obrigatório.");
-                case "senha":
-                    return ResponseEntity.badRequest().body("O campo 'senha' é obrigatório.");
-            }
-        }
-        return ResponseEntity.badRequest().body("Erro de validação no formulário.");
+    public ResponseEntity<String> tratarErro400(MethodArgumentNotValidException ex) {
+        return ResponseEntity.badRequest().body("Preencha todos os campos corretamente.");
     }
+
 }
