@@ -13,5 +13,8 @@ public record CursoListagemDTO(
         String descricao,
         Integer semestres,
         String slug,
+        String cargaHoraria,
+        String duracaoMax,
+        String modalidade,
         List<ProfessorCursoDTO> professores) {}
 

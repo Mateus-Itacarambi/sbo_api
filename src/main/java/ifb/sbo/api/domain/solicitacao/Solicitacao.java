@@ -6,7 +6,10 @@ import ifb.sbo.api.domain.professor.Professor;
 import ifb.sbo.api.domain.tema.Tema;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.time.Clock;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Table(name = "solicitacao")
 @Entity(name = "Solicitacao")
@@ -24,7 +27,9 @@ public class Solicitacao {
     @Column(name = "status_solicitacao")
     private StatusSolicitacao  status;
     @Column(name = "data_solicitacao", nullable = false)
-    private LocalDate  dataSolicitacao;
+    private LocalDateTime dataSolicitacao;
+    @Column(name = "data_atualizacao", nullable = false)
+    private LocalDateTime dataAtualizacao;
     @Column(name = "data_conclusao_orientacao")
     private LocalDate dataConclusaoOrientacao;
     @ManyToOne(optional = false)
@@ -37,4 +42,23 @@ public class Solicitacao {
     @JoinColumn(name = "id_estudante", nullable = false)
     private Estudante estudante;
     private String motivo;
+
+    public Solicitacao(Tema tema, Professor professor) {
+        Clock clock = Clock.systemDefaultZone();
+        this.status = StatusSolicitacao.PENDENTE;
+        this.dataSolicitacao = LocalDateTime.now(clock);
+        this.dataAtualizacao = LocalDateTime.now(clock);
+        this.tema = tema;
+        this.professor = professor;
+    }
+
+    public Solicitacao(Tema tema, Professor professor, Estudante estudante) {
+        Clock clock = Clock.systemDefaultZone();
+        this.status = StatusSolicitacao.PENDENTE;
+        this.dataSolicitacao = LocalDateTime.now(clock);
+        this.dataAtualizacao = LocalDateTime.now(clock);
+        this.tema = tema;
+        this.professor = professor;
+        this.estudante = estudante;
+    }
 }

@@ -5,16 +5,22 @@ import ifb.sbo.api.domain.curso.*;
 import ifb.sbo.api.infra.service.SlugUtils;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.io.IOException;
 import java.util.Comparator;
 import java.util.List;
 
@@ -89,5 +95,21 @@ public class CursoController {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
         return ResponseEntity.ok(cursoService.mapearParaDTO(curso));
+    }
+
+    @PostMapping("/importar-relatorio-csv")
+    public ResponseEntity<Resource> importarCursosCsv(@RequestParam("file") MultipartFile file) {
+        try {
+            ByteArrayResource csvRelatorio = cursoService.importarCursos(file);
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=relatorio_importacao_cursos.csv")
+                    .contentType(MediaType.parseMediaType("text/csv"))
+                    .contentLength(csvRelatorio.contentLength())
+                    .body(csvRelatorio);
+
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 }

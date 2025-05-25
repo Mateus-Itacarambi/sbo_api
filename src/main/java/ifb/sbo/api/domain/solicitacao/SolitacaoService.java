@@ -2,6 +2,8 @@ package ifb.sbo.api.domain.solicitacao;
 import ifb.sbo.api.domain.estudante.Estudante;
 import ifb.sbo.api.domain.estudante.EstudanteDetalhaDTO;
 import ifb.sbo.api.domain.estudante.EstudanteService;
+import ifb.sbo.api.domain.notificacao.NotificacaoService;
+import ifb.sbo.api.domain.notificacao.TipoNotificacao;
 import ifb.sbo.api.domain.professor.*;
 import ifb.sbo.api.domain.tema.StatusTema;
 import ifb.sbo.api.domain.tema.TemaDetalhaSolicitacaoDTO;
@@ -17,7 +19,9 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Clock;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -37,10 +41,15 @@ public class SolitacaoService {
 
     private final UsuarioService usuarioService;
 
-    public SolitacaoService(EstudanteService estudanteService, ProfessorService professorService, UsuarioService usuarioService) {
+    private final NotificacaoService notificacaoService;
+
+    Clock clock = Clock.systemDefaultZone();
+
+    public SolitacaoService(EstudanteService estudanteService, ProfessorService professorService, UsuarioService usuarioService, NotificacaoService notificacaoService) {
         this.estudanteService = estudanteService;
         this.professorService = professorService;
         this.usuarioService = usuarioService;
+        this.notificacaoService = notificacaoService;
     }
 
     public SolicitacaoListagemDTO solicitarOrientacao(Long estudanteId, Long professorId) {
@@ -56,13 +65,11 @@ public class SolitacaoService {
         existeSolicitacaoTemaProfessor(tema.getId(), professorId);
         existeSolicitacaoTema(tema.getId());
 
-        var solicitacao = new Solicitacao();
-        solicitacao.setStatus(StatusSolicitacao.PENDENTE);
-        solicitacao.setDataSolicitacao(LocalDate.now());
-        solicitacao.setTema(tema);
-        solicitacao.setProfessor(professor);
+        var solicitacao = new Solicitacao(tema, professor);
 
         solicitacaoRepository.save(solicitacao);
+
+        notificacaoService.criarNotificacao(estudante, professor, "Nova solicitação de orientação: ", solicitacao, TipoNotificacao.ORIENTACAO.toString());
 
         return detalharSolicitacao(solicitacao.getId());
     }
@@ -78,7 +85,10 @@ public class SolitacaoService {
 
         solicitacao.setStatus(StatusSolicitacao.REJEITADA);
         solicitacao.setMotivo(dados.motivo());
+        solicitacao.setDataAtualizacao(LocalDateTime.now(clock));
         solicitacaoRepository.save(solicitacao);
+
+        notificacaoService.criarNotificacao(solicitacao.getProfessor(), solicitacao.getEstudante(), "Sua solicitação de orientação foi rejeitada pelo professor ", solicitacao, solicitacao.getStatus().toString());
 
         return detalharSolicitacao(solicitacaoId);
     }
@@ -106,6 +116,7 @@ public class SolitacaoService {
 
         tema.setProfessor(professor);
         solicitacao.setStatus(StatusSolicitacao.APROVADA);
+        solicitacao.setDataAtualizacao(LocalDateTime.now(clock));
         solicitacaoRepository.save(solicitacao);
 
         List<Solicitacao> solicitacoes = solicitacaoRepository.findAllByTemaAndStatus(solicitacao.getTema(), StatusSolicitacao.PENDENTE);
@@ -147,6 +158,7 @@ public class SolitacaoService {
         tema.setDataAtualizacao(LocalDate.now());
 
         solicitacao.setStatus(StatusSolicitacao.CANCELADA);
+        solicitacao.setDataAtualizacao(LocalDateTime.now(clock));
         solicitacaoRepository.save(solicitacao);
 
         maximoOrientacoesAtingida(usuarioId, solicitacao);
@@ -168,6 +180,7 @@ public class SolitacaoService {
 
         solicitacao.setStatus(StatusSolicitacao.CONCLUIDA);
         solicitacao.setDataConclusaoOrientacao(LocalDate.now());
+        solicitacao.setDataAtualizacao(LocalDateTime.now(clock));
         solicitacaoRepository.save(solicitacao);
 
         maximoOrientacoesAtingida(usuarioId, solicitacao);
@@ -186,12 +199,7 @@ public class SolitacaoService {
         estudanteTemSolicitacaoAprovada(estudanteId);
         existeSolicitacaoTemaProfessorAprovada(tema.getId(), professor.getId());
 
-        var solicitacao = new Solicitacao();
-        solicitacao.setStatus(StatusSolicitacao.PENDENTE);
-        solicitacao.setDataSolicitacao(LocalDate.now());
-        solicitacao.setTema(tema);
-        solicitacao.setProfessor(professor);
-        solicitacao.setEstudante(estudante);
+        var solicitacao = new Solicitacao(tema, professor, estudante);
 
         solicitacaoRepository.save(solicitacao);
 

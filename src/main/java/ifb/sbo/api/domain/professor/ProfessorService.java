@@ -368,7 +368,8 @@ public class ProfessorService {
                 .stream()
                 .map(curso -> new CursoDetalhaDTO(
                         curso.getId(),
-                        curso.getNome())).toList();
+                        curso.getNome(),
+                        curso.getSlug())).toList();
 
         List<AreaInteresseDetalhaDTO> areasInteresseDTO = professor.getAreasInteresse()
                 .stream()
@@ -392,7 +393,8 @@ public class ProfessorService {
                 .stream()
                 .map(curso -> new CursoDetalhaDTO(
                         curso.getId(),
-                        curso.getNome())).toList();
+                        curso.getNome(),
+                        curso.getSlug())).toList();
 
         List<AreaInteresseDetalhaDTO> areasInteresseDTO = professor.getAreasInteresse()
                 .stream()

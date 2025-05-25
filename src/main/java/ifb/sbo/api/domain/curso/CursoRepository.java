@@ -26,4 +26,6 @@ public interface CursoRepository extends JpaRepository<Curso, Long> {
     Optional<Curso> findByNomeIgnoreCase(String nome);
 
     int countBySiglaAndAtivoTrue(String sigla);
+
+    boolean existsByNome(String nome);
 }

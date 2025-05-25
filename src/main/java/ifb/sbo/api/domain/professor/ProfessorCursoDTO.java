@@ -9,5 +9,6 @@ public record ProfessorCursoDTO(
         Long id,
         String nome,
         String email,
-        String disponibilidade) {
+        String disponibilidade,
+        String idLattes) {
 }

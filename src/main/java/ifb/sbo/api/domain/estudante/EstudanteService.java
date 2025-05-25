@@ -146,7 +146,8 @@ public class EstudanteService {
                 estudante.getSemestre() != null ? estudante.getSemestre() : null,
                 estudante.getCurso() != null ? new CursoDetalhaDTO(
                         estudante.getCurso().getId(),
-                        estudante.getCurso().getNome()
+                        estudante.getCurso().getNome(),
+                        estudante.getCurso().getSlug()
                 ) : null,
                 estudante.getTema() != null ? new TemaDetalhaDTO(
                         estudante.getTema().getId(),
