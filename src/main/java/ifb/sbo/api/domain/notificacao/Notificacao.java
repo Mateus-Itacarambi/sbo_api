@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 public class Notificacao {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_notificacao")
     private Long id;
     private String mensagem;
     private boolean lida = false;

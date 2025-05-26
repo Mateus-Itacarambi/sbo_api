@@ -83,12 +83,18 @@ public class SolitacaoService {
 
         verificarSolicitacao(solicitacao);
 
+        var tema = temaService.buscarTema(solicitacao.getTema().getId());
+
+        if (solicitacao.getEstudante() != null) {
+            notificacaoService.criarNotificacao(solicitacao.getProfessor(), solicitacao.getEstudante(), "Sua solicitação para o tema “" + tema.getTitulo() + "” foi rejeitada pelo(a) professor(a) ", solicitacao, StatusSolicitacao.REJEITADA.toString());
+        }
+
         solicitacao.setStatus(StatusSolicitacao.REJEITADA);
         solicitacao.setMotivo(dados.motivo());
         solicitacao.setDataAtualizacao(LocalDateTime.now(clock));
         solicitacaoRepository.save(solicitacao);
 
-        notificacaoService.criarNotificacao(solicitacao.getProfessor(), solicitacao.getEstudante(), "Sua solicitação de orientação foi rejeitada pelo professor ", solicitacao, solicitacao.getStatus().toString());
+        tema.getEstudantes().forEach(e -> notificacaoService.criarNotificacao(solicitacao.getProfessor(), e, "Sua solicitação de orientação foi rejeitada pelo(a) professor(a) ", solicitacao, StatusSolicitacao.REJEITADA.toString()));
 
         return detalharSolicitacao(solicitacaoId);
     }
@@ -108,11 +114,14 @@ public class SolitacaoService {
 
         var tema = temaService.buscarTema(solicitacao.getTema().getId());
 
-        if (solicitacao.getEstudante() != null) {
-            temaService.adicionarEstudanteAoTema(tema.getId(), professor.getId(), solicitacao.getEstudante().getMatricula());
-        }
-
         tema.setStatus(StatusTema.EM_ANDAMENTO);
+
+        if (solicitacao.getEstudante() != null) {
+            notificacaoService.criarNotificacao(solicitacao.getProfessor(), solicitacao.getEstudante(), "Sua solicitação para o tema “" + tema.getTitulo() + "” foi aprovada pelo(a) professor(a) ", solicitacao, StatusSolicitacao.APROVADA.toString());
+            temaService.adicionarEstudanteAoTema(tema.getId(), professor.getId(), solicitacao.getEstudante().getMatricula());
+        } else {
+            tema.getEstudantes().forEach(estudante -> notificacaoService.criarNotificacao(solicitacao.getProfessor(), estudante, "Sua solicitação de orientação foi aprovada pelo(a) professor(a) ", solicitacao, StatusSolicitacao.APROVADA.toString()));
+        }
 
         tema.setProfessor(professor);
         solicitacao.setStatus(StatusSolicitacao.APROVADA);
@@ -157,6 +166,63 @@ public class SolitacaoService {
 
         tema.setDataAtualizacao(LocalDate.now());
 
+        if (usuario instanceof Estudante estudante && solicitacao.getStatus() != StatusSolicitacao.PENDENTE) {
+            if (solicitacao.getEstudante() != null) {
+                var mensagem = " cancelou a solicitação do tema “" + solicitacao.getTema() + "“.";
+                notificacaoService.criarNotificacao(estudante, solicitacao.getProfessor(), mensagem, solicitacao, StatusSolicitacao.CONCLUIDA.toString());
+
+                tema.getEstudantes().stream()
+                        .filter(e -> !e.getId().equals(estudante.getId()))
+                        .forEach(outroEstudante ->
+                                notificacaoService.criarNotificacao(
+                                        estudante,
+                                        outroEstudante,
+                                        mensagem,
+                                        solicitacao,
+                                        StatusSolicitacao.CANCELADA.toString()
+                                )
+                        );
+            } else {
+                tema.getEstudantes().stream()
+                        .filter(e -> !e.getId().equals(estudante.getId()))
+                        .forEach(outroEstudante ->
+                                notificacaoService.criarNotificacao(
+                                        estudante,
+                                        outroEstudante,
+                                        "Solicitação de orientação cancelada por ",
+                                        solicitacao,
+                                        StatusSolicitacao.CANCELADA.toString()
+                                )
+                        );
+//                notificacaoService.criarNotificacao(estudante, solicitacao.getProfessor(), "Solicitação de orientação cancelada por ", solicitacao, StatusSolicitacao.CONCLUIDA.toString());
+            }
+        } else if (usuario instanceof Professor professor && solicitacao.getStatus() != StatusSolicitacao.PENDENTE) {
+            if (solicitacao.getEstudante() != null) {
+                var mensagem = " cancelou a solicitação do tema “" + solicitacao.getTema() + "“.";
+                tema.getEstudantes()
+                        .forEach(estudante ->
+                                notificacaoService.criarNotificacao(
+                                        professor,
+                                        estudante,
+                                        mensagem,
+                                        solicitacao,
+                                        StatusSolicitacao.CANCELADA.toString()
+                                )
+                        );
+            } else {
+                tema.getEstudantes()
+                    .forEach(estudante ->
+                            notificacaoService.criarNotificacao(
+                                    professor,
+                                    estudante,
+                                    "Solicitação de orientação cancelada por ",
+                                    solicitacao,
+                                    StatusSolicitacao.CANCELADA.toString()
+                            )
+                    );
+            }
+        }
+
         solicitacao.setStatus(StatusSolicitacao.CANCELADA);
         solicitacao.setDataAtualizacao(LocalDateTime.now(clock));
         solicitacaoRepository.save(solicitacao);
@@ -183,6 +249,10 @@ public class SolitacaoService {
         solicitacao.setDataAtualizacao(LocalDateTime.now(clock));
         solicitacaoRepository.save(solicitacao);
 
+        tema.getEstudantes().forEach(estudante -> notificacaoService.criarNotificacao(solicitacao.getProfessor(), estudante, "Sua orientação foi concluída pelo professor(a) ", solicitacao, StatusSolicitacao.CONCLUIDA.toString()));
+
+//        estudantes.forEach(estudante -> notificacaoService.criarNotificacao(professor, estudante, "Sua orientação foi concluída pelo professor(a) ", solicitacao, StatusSolicitacao.CONCLUIDA.toString()));
+
         maximoOrientacoesAtingida(usuarioId, solicitacao);
 
         return detalharSolicitacao(solicitacaoId);
@@ -202,6 +272,10 @@ public class SolitacaoService {
         var solicitacao = new Solicitacao(tema, professor, estudante);
 
         solicitacaoRepository.save(solicitacao);
+
+        var mensagem = " tem interesse no tema: " + tema.getTitulo() + ".";
+
+        notificacaoService.criarNotificacao(estudante, professor, mensagem, solicitacao, TipoNotificacao.TEMA.toString());
 
         return detalharSolicitacao(solicitacao.getId());
     }
