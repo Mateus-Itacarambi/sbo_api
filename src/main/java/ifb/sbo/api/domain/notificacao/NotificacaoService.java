@@ -7,6 +7,7 @@ import ifb.sbo.api.domain.usuario.UsuarioSimplesDTO;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +22,10 @@ public class NotificacaoService {
     @Autowired
     private NotificacaoRepository notificacaoRepository;
 
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
+
+
     public void criarNotificacao(Usuario solicitante, Usuario destinatario, String mensagem, Solicitacao solicitacao, String tipo) {
         Notificacao notificacao = new Notificacao();
         notificacao.setSolicitante(solicitante);
@@ -32,7 +37,11 @@ public class NotificacaoService {
         notificacao.setTipo(tipo);
 
         notificacaoRepository.save(notificacao);
+
+        NotificacaoDTO dto = toDTO(notificacao);
+        messagingTemplate.convertAndSend("/topic/notificacoes/" + destinatario.getId(), dto);
     }
+
 
     public List<NotificacaoDTO> buscarNaoLidasPorUsuario(Usuario usuario) {
         return notificacaoRepository.findByDestinatarioAndLidaFalseOrderByDataCriacaoDesc(usuario)

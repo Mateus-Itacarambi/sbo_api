@@ -25,8 +25,6 @@ public class SecurityFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-//        var tokenJWT = recuperarToken(request);
-
         String tokenJWT = null;
         Cookie[] cookies = request.getCookies();
 
@@ -39,11 +37,13 @@ public class SecurityFilter extends OncePerRequestFilter {
         }
 
         if (tokenJWT != null) {
-            var subject = tokenService.getSubject(tokenJWT);
-            var usuario = usuarioRepository.findByEmail(subject);
-
-            var authentication = new UsernamePasswordAuthenticationToken(usuario, null, usuario.get().getAuthorities());
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+            String subject = tokenService.getSubject(tokenJWT);
+            if (subject != null) {
+                usuarioRepository.findByEmail(subject).ifPresent(usuario -> {
+                    var auth = new UsernamePasswordAuthenticationToken(usuario, null, usuario.getAuthorities());
+                    SecurityContextHolder.getContext().setAuthentication(auth);
+                });
+            }
         }
 
         filterChain.doFilter(request, response);

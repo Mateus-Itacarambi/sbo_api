@@ -27,12 +27,12 @@ public class NotificacaoController {
     @GetMapping("/nao-lidas/{idUsuario}")
     public ResponseEntity<List<NotificacaoDTO>> listarNaoLidas(@PathVariable Long idUsuario) {
         var usuario = usuarioRepository.getReferenceById(idUsuario);
-        System.out.println("USUARIO: " + usuario.getId());
         return ResponseEntity.ok(notificacaoService.buscarNaoLidasPorUsuario(usuario));
     }
 
     @PutMapping("/{id}/marcar-lida/{idUsuario}")
-    public ResponseEntity<Void> marcarComoLida(@PathVariable Long id, @AuthenticationPrincipal Usuario usuario) {
+    public ResponseEntity<Void> marcarComoLida(@PathVariable Long id, @PathVariable Long idUsuario) {
+        var usuario = usuarioRepository.getReferenceById(idUsuario);
         notificacaoService.marcarComoLida(id, usuario);
         return ResponseEntity.noContent().build();
     }

@@ -38,16 +38,16 @@ public class TokenService {
 
     public String getSubject(String tokenJWT) {
         try {
-            var algoritmo = Algorithm.HMAC256(secret);
-            return JWT.require(algoritmo)
+            return JWT.require(getAlgorithm())
                     .withIssuer("API SBO")
                     .build()
                     .verify(tokenJWT)
                     .getSubject();
-        } catch (JWTVerificationException exception) {
-            throw new RuntimeException("Token inválido ou expirado!");
+        } catch (JWTVerificationException e) {
+            return null;
         }
     }
+
 
     private Instant dataExpiracao() {
         return LocalDateTime.now().plusHours(2).toInstant(ZoneOffset.of("-03:00"));
