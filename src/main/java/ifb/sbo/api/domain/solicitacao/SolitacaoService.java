@@ -65,7 +65,8 @@ public class SolitacaoService {
         existeSolicitacaoTemaProfessor(tema.getId(), professorId);
         existeSolicitacaoTema(tema.getId());
 
-        var solicitacao = new Solicitacao(tema, professor);
+        var solicitacao = new Solicitacao(tema, professor, estudante);
+        solicitacao.setTipo(TipoSolicitacao.ORIENTACAO);
 
         solicitacaoRepository.save(solicitacao);
 
@@ -85,7 +86,7 @@ public class SolitacaoService {
 
         var tema = temaService.buscarTema(solicitacao.getTema().getId());
 
-        if (solicitacao.getEstudante() != null) {
+        if (solicitacao.getTipo() == TipoSolicitacao.TEMA) {
             notificacaoService.criarNotificacao(solicitacao.getProfessor(), solicitacao.getEstudante(), "Sua solicitação para o tema “" + tema.getTitulo() + "” foi rejeitada pelo(a) professor(a) ", solicitacao, StatusSolicitacao.REJEITADA.toString());
         }
 
@@ -116,7 +117,7 @@ public class SolitacaoService {
 
         tema.setStatus(StatusTema.EM_ANDAMENTO);
 
-        if (solicitacao.getEstudante() != null) {
+        if (solicitacao.getTipo() == TipoSolicitacao.TEMA) {
             notificacaoService.criarNotificacao(solicitacao.getProfessor(), solicitacao.getEstudante(), "Sua solicitação para o tema “" + tema.getTitulo() + "” foi aprovada pelo(a) professor(a) ", solicitacao, StatusSolicitacao.APROVADA.toString());
             temaService.adicionarEstudanteAoTema(tema.getId(), professor.getId(), solicitacao.getEstudante().getMatricula());
         } else {
@@ -138,12 +139,13 @@ public class SolitacaoService {
         return detalharSolicitacao(solicitacaoId);
     }
 
-    public void cancelarSolicitacao(Long solicitacaoId, Long usuarioId, SolicitacaoMotivoDTO dados) {
-        var solicitacao = buscarSolicitacao(solicitacaoId);
+    public void cancelarSolicitacao(Long temaId, Usuario usuario, SolicitacaoMotivoDTO dados) {
+//        var solicitacao = buscarSolicitacaoPorTema(temaId);
+        var solicitacao = buscarSolicitacao(temaId);
         solicitacaoConcluida(solicitacao);
 
-        var usuario = usuarioService.buscarUsuario(usuarioId);
-        usuarioService.verificarUsuarioSolicitacao(usuarioId, solicitacao);
+//        var usuario = usuarioService.buscarUsuario(usuarioId);
+        usuarioService.verificarUsuarioSolicitacao(usuario.getId(), solicitacao);
 
         verificarProfessorCancelar(usuario, solicitacao, dados.motivo());
 
@@ -154,7 +156,7 @@ public class SolitacaoService {
         tema.setStatus(StatusTema.RESERVADO);
         tema.setProfessor(null);
 
-        if (solicitacao.getEstudante() != null) {
+        if (solicitacao.getTipo() == TipoSolicitacao.TEMA) {
             var professor = professorService.buscarProfessor(solicitacao.getProfessor().getId());
 
             tema.setStatus(StatusTema.DISPONIVEL);
@@ -167,7 +169,7 @@ public class SolitacaoService {
         tema.setDataAtualizacao(LocalDate.now());
 
         if (usuario instanceof Estudante estudante && solicitacao.getStatus() != StatusSolicitacao.PENDENTE) {
-            if (solicitacao.getEstudante() != null) {
+            if (solicitacao.getTipo() == TipoSolicitacao.TEMA) {
                 var mensagem = " cancelou a solicitação do tema “" + solicitacao.getTema() + "“.";
                 notificacaoService.criarNotificacao(estudante, solicitacao.getProfessor(), mensagem, solicitacao, StatusSolicitacao.CONCLUIDA.toString());
 
@@ -197,7 +199,7 @@ public class SolitacaoService {
 //                notificacaoService.criarNotificacao(estudante, solicitacao.getProfessor(), "Solicitação de orientação cancelada por ", solicitacao, StatusSolicitacao.CONCLUIDA.toString());
             }
         } else if (usuario instanceof Professor professor && solicitacao.getStatus() != StatusSolicitacao.PENDENTE) {
-            if (solicitacao.getEstudante() != null) {
+            if (solicitacao.getTipo() == TipoSolicitacao.TEMA) {
                 var mensagem = " cancelou a solicitação do tema “" + solicitacao.getTema() + "“.";
                 tema.getEstudantes()
                         .forEach(estudante ->
@@ -227,7 +229,7 @@ public class SolitacaoService {
         solicitacao.setDataAtualizacao(LocalDateTime.now(clock));
         solicitacaoRepository.save(solicitacao);
 
-        maximoOrientacoesAtingida(usuarioId, solicitacao);
+        maximoOrientacoesAtingida(usuario.getId(), solicitacao);
     }
 
     @Transactional
@@ -270,6 +272,7 @@ public class SolitacaoService {
         existeSolicitacaoTemaProfessorAprovada(tema.getId(), professor.getId());
 
         var solicitacao = new Solicitacao(tema, professor, estudante);
+        solicitacao.setTipo(TipoSolicitacao.TEMA);
 
         solicitacaoRepository.save(solicitacao);
 
@@ -280,19 +283,20 @@ public class SolitacaoService {
         return detalharSolicitacao(solicitacao.getId());
     }
 
-    public Page<SolicitacaoListagemDTO> listarSolicitacoesPaginados(@PageableDefault(size = 20, sort = {"nome"}) Pageable paginacao) {
+    public Page<SolicitacaoListagemDTO> listarSolicitacoesPaginados(@PageableDefault Pageable paginacao) {
         return solicitacaoRepository.findAll(paginacao)
                 .map(this::mapearParaDTO);
     }
 
-    public Page<SolicitacaoListagemDTO> listarSolicitacoesPorProfessor(@PageableDefault(size = 20, sort = {"nome"}) Pageable paginacao, Long professorId) {
-        return solicitacaoRepository.findAllByProfessorId(paginacao, professorId)
+    public Page<SolicitacaoListagemDTO> listarSolicitacoesPorProfessor(@PageableDefault Pageable paginacao, Usuario usuario) {
+        var professor = professorService.buscarProfessor(usuario.getId());
+        return solicitacaoRepository.findAllByProfessor(paginacao, professor)
                 .map(this::mapearParaDTO);
     }
 
-    public Page<SolicitacaoListagemDTO> listarSolicitacoesPorAluno(@PageableDefault(size = 20, sort = {"nome"}) Pageable paginacao, Long estudanteId) {
-        estudanteService.buscarEstudante(estudanteId);
-        return solicitacaoRepository.findAllByTemaEstudanteId(paginacao, estudanteId)
+    public Page<SolicitacaoListagemDTO> listarSolicitacoesPorAluno(@PageableDefault Pageable paginacao, Usuario usuario) {
+        var estudante = estudanteService.buscarEstudante(usuario.getId());
+        return solicitacaoRepository.findAllByEstudante(paginacao, estudante)
                 .map(this::mapearParaDTO);
     }
 
@@ -303,6 +307,11 @@ public class SolitacaoService {
 
     public Solicitacao buscarSolicitacao(Long solicitacaoId) {
         return solicitacaoRepository.findById(solicitacaoId)
+                .orElseThrow(() -> new EntityNotFoundException("Solicitação não encontrada!"));
+    }
+
+    public Solicitacao buscarSolicitacaoPorTema(Long temaId) {
+        return solicitacaoRepository.findByTemaId(temaId)
                 .orElseThrow(() -> new EntityNotFoundException("Solicitação não encontrada!"));
     }
 
@@ -418,7 +427,8 @@ public class SolitacaoService {
                         solicitacao.getEstudante().getId(),
                         solicitacao.getEstudante().getNome()
                 ) : null,
-                solicitacao.getMotivo()
+                solicitacao.getMotivo(),
+                solicitacao.getTipo()
         );
     }
 }

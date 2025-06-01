@@ -1,6 +1,7 @@
 package ifb.sbo.api.domain.solicitacao;
 
 
+import ifb.sbo.api.domain.estudante.Estudante;
 import ifb.sbo.api.domain.professor.Professor;
 import ifb.sbo.api.domain.tema.Tema;
 import org.springframework.data.domain.Page;
@@ -19,7 +20,9 @@ public interface SolicitacaoRepository extends JpaRepository<Solicitacao, Long> 
     @Query("select count(*) from Solicitacao s where s.tema.id = :temaId and s.professor.id = :professorId and s.status = :status")
     int countByIdTemaAndIdProfessor(@Param("temaId") Long temaId, @Param("professorId") Long professorId, StatusSolicitacao status);
 
-    Page<Solicitacao> findAllByProfessorId(Pageable paginacao, Long professorId);
+    Page<Solicitacao> findAllByProfessor(Pageable paginacao, Professor professor);
+
+    Page<Solicitacao> findAllByEstudante(Pageable paginacao, Estudante estudante);
 
     @Query("select s from Solicitacao s inner join Tema t on s.tema.id = t.id " +
             "                           inner join Professor p on s.professor.id = p.id" +
@@ -33,4 +36,6 @@ public interface SolicitacaoRepository extends JpaRepository<Solicitacao, Long> 
 @Query("select count (s) from Solicitacao s inner join Tema t on s.tema.id = t.id" +
         "                                   left join Estudante e on t.id = e.tema.id where s.status = :status and e.id = :estudanteId")
     int countByStatusAndEstudante (StatusSolicitacao status, Long estudanteId);
+
+    Optional<Solicitacao> findByTemaId(Long temaId);
 }

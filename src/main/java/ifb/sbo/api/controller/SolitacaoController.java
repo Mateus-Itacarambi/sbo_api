@@ -3,10 +3,12 @@ package ifb.sbo.api.controller;
 import ifb.sbo.api.domain.solicitacao.SolicitacaoListagemDTO;
 import ifb.sbo.api.domain.solicitacao.SolicitacaoMotivoDTO;
 import ifb.sbo.api.domain.solicitacao.SolitacaoService;
+import ifb.sbo.api.domain.usuario.Usuario;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -23,15 +25,15 @@ public class SolitacaoController {
         return ResponseEntity.ok(solicitacoes);
     }
 
-    @GetMapping("/professor/{professorId}")
-    public ResponseEntity<Page<SolicitacaoListagemDTO>> listarSolicitacoesProfessor (@PathVariable Long professorId, Pageable paginacao) {
-        Page<SolicitacaoListagemDTO> solicitacoes = solicitacaoService.listarSolicitacoesPorProfessor(paginacao, professorId);
+    @GetMapping("/professor")
+    public ResponseEntity<Page<SolicitacaoListagemDTO>> listarSolicitacoesProfessor (@AuthenticationPrincipal Usuario usuario, Pageable paginacao) {
+        Page<SolicitacaoListagemDTO> solicitacoes = solicitacaoService.listarSolicitacoesPorProfessor(paginacao, usuario);
         return ResponseEntity.ok(solicitacoes);
     }
 
-    @GetMapping("/estudante/{estudanteId}")
-    public ResponseEntity<Page<SolicitacaoListagemDTO>> listarSolicitacoesEstudante (@PathVariable Long estudanteId, Pageable paginacao) {
-        Page<SolicitacaoListagemDTO> solicitacoes = solicitacaoService.listarSolicitacoesPorAluno(paginacao, estudanteId);
+    @GetMapping("/estudante")
+    public ResponseEntity<Page<SolicitacaoListagemDTO>> listarSolicitacoesEstudante (@AuthenticationPrincipal Usuario usuario, Pageable paginacao) {
+        Page<SolicitacaoListagemDTO> solicitacoes = solicitacaoService.listarSolicitacoesPorAluno(paginacao, usuario);
         return ResponseEntity.ok(solicitacoes);
     }
 
@@ -53,9 +55,9 @@ public class SolitacaoController {
         return ResponseEntity.created(uri).body(solicitacao);
     }
 
-    @DeleteMapping("/{solicitacaoId}/cancelar/{usuarioId}")
-    public ResponseEntity cancelarSolicitacao(@PathVariable Long solicitacaoId, @PathVariable Long usuarioId, @RequestBody SolicitacaoMotivoDTO dados) {
-        solicitacaoService.cancelarSolicitacao(solicitacaoId, usuarioId, dados);
+    @DeleteMapping("/cancelar/{temaId}")
+    public ResponseEntity cancelarSolicitacao(@PathVariable Long temaId, @AuthenticationPrincipal Usuario usuario, @RequestBody SolicitacaoMotivoDTO dados) {
+        solicitacaoService.cancelarSolicitacao(temaId, usuario, dados);
         return ResponseEntity.noContent().build();
     }
 

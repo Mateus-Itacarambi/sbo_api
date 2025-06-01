@@ -2,6 +2,7 @@ package ifb.sbo.api.domain.solicitacao;
 
 
 import ifb.sbo.api.domain.estudante.Estudante;
+import ifb.sbo.api.domain.notificacao.Notificacao;
 import ifb.sbo.api.domain.professor.Professor;
 import ifb.sbo.api.domain.tema.Tema;
 import jakarta.persistence.*;
@@ -10,6 +11,7 @@ import lombok.*;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Table(name = "solicitacao")
 @Entity(name = "Solicitacao")
@@ -26,6 +28,8 @@ public class Solicitacao {
     @Enumerated(EnumType.STRING)
     @Column(name = "status_solicitacao")
     private StatusSolicitacao  status;
+    @Enumerated(EnumType.STRING)
+    private TipoSolicitacao tipo;
     @Column(name = "data_solicitacao", nullable = false)
     private LocalDateTime dataSolicitacao;
     @Column(name = "data_atualizacao", nullable = false)
@@ -42,15 +46,8 @@ public class Solicitacao {
     @JoinColumn(name = "id_estudante", nullable = false)
     private Estudante estudante;
     private String motivo;
-
-    public Solicitacao(Tema tema, Professor professor) {
-        Clock clock = Clock.systemDefaultZone();
-        this.status = StatusSolicitacao.PENDENTE;
-        this.dataSolicitacao = LocalDateTime.now(clock);
-        this.dataAtualizacao = LocalDateTime.now(clock);
-        this.tema = tema;
-        this.professor = professor;
-    }
+    @OneToMany(mappedBy = "solicitacao", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<Notificacao> notificacoes;
 
     public Solicitacao(Tema tema, Professor professor, Estudante estudante) {
         Clock clock = Clock.systemDefaultZone();

@@ -15,4 +15,5 @@ public record SolicitacaoListagemDTO(
         TemaDetalhaSolicitacaoDTO tema,
         ProfessorDetalhaDTO professor,
         EstudanteDetalhaDTO estudante,
-        String motivo) {}
+        String motivo,
+        TipoSolicitacao tipo) {}

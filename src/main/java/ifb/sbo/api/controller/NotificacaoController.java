@@ -24,17 +24,22 @@ public class NotificacaoController {
     @Autowired
     private NotificacaoRepository notificacaoRepository;
 
-    @GetMapping("/nao-lidas/{idUsuario}")
-    public ResponseEntity<List<NotificacaoDTO>> listarNaoLidas(@PathVariable Long idUsuario) {
-        var usuario = usuarioRepository.getReferenceById(idUsuario);
+    @GetMapping("/nao-lidas")
+    public ResponseEntity<List<NotificacaoDTO>> listarNaoLidas(@AuthenticationPrincipal Usuario usuario) {
         return ResponseEntity.ok(notificacaoService.buscarNaoLidasPorUsuario(usuario));
     }
 
-    @PutMapping("/{id}/marcar-lida/{idUsuario}")
-    public ResponseEntity<Void> marcarComoLida(@PathVariable Long id, @PathVariable Long idUsuario) {
-        var usuario = usuarioRepository.getReferenceById(idUsuario);
+    @PutMapping("/{id}/marcar-lida")
+    public ResponseEntity<Void> marcarComoLida(@PathVariable Long id, @AuthenticationPrincipal Usuario usuario) {
         notificacaoService.marcarComoLida(id, usuario);
         return ResponseEntity.noContent().build();
     }
+
+    @PutMapping("/marcar-todas-lidas")
+    public ResponseEntity<Void> marcarTodasComoLidas(@AuthenticationPrincipal Usuario usuario) {
+        notificacaoService.marcarTodasComoLidas(usuario);
+        return ResponseEntity.noContent().build();
+    }
+
 }
 

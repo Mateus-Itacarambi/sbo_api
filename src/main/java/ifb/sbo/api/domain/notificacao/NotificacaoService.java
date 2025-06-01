@@ -63,6 +63,14 @@ public class NotificacaoService {
         notificacaoRepository.save(notificacao);
     }
 
+    @Transactional
+    public void marcarTodasComoLidas(Usuario usuario) {
+        var notificacoes = notificacaoRepository.findByDestinatarioAndLidaFalse(usuario);
+        for (Notificacao notificacao : notificacoes) {
+            notificacao.setLida(true);
+        }
+        notificacaoRepository.saveAll(notificacoes);
+    }
 
     public NotificacaoDTO toDTO(Notificacao notificacao) {
         return new NotificacaoDTO(
