@@ -29,10 +29,6 @@ public class ProfessorSpecification {
                 predicates.add(join.get("nome").in(filtro.getCurso()));
             }
 
-//            if (filtro.getDisponibilidade() != null && !filtro.getDisponibilidade().isEmpty()) {
-//                predicates.add(cb.equal(root.get("disponibilidade"), filtro.getDisponibilidade()));
-//            }
-
             if (filtro.getDisponibilidade() != null && !filtro.getDisponibilidade().isEmpty()) {
                 List<Disponibilidade> disponiveisValidos = filtro.getDisponibilidade().stream()
                         .map(String::toUpperCase)

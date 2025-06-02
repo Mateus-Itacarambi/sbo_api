@@ -1,5 +1,6 @@
 package ifb.sbo.api.controller;
 
+import ifb.sbo.api.domain.solicitacao.FiltroSolicitacao;
 import ifb.sbo.api.domain.solicitacao.SolicitacaoListagemDTO;
 import ifb.sbo.api.domain.solicitacao.SolicitacaoMotivoDTO;
 import ifb.sbo.api.domain.solicitacao.SolitacaoService;
@@ -12,6 +13,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.List;
+
 
 @RestController
 @RequestMapping("/solicitacoes")
@@ -19,11 +22,11 @@ public class SolitacaoController {
     @Autowired
     private SolitacaoService solicitacaoService;
 
-    @GetMapping
-    public ResponseEntity<Page<SolicitacaoListagemDTO>> listar (Pageable paginacao) {
-        Page<SolicitacaoListagemDTO> solicitacoes = solicitacaoService.listarSolicitacoesPaginados(paginacao);
-        return ResponseEntity.ok(solicitacoes);
-    }
+//    @GetMapping
+//    public ResponseEntity<Page<SolicitacaoListagemDTO>> listar (Pageable paginacao) {
+//        Page<SolicitacaoListagemDTO> solicitacoes = solicitacaoService.listarSolicitacoesPaginados(paginacao);
+//        return ResponseEntity.ok(solicitacoes);
+//    }
 
     @GetMapping("/professor")
     public ResponseEntity<Page<SolicitacaoListagemDTO>> listarSolicitacoesProfessor (@AuthenticationPrincipal Usuario usuario, Pageable paginacao) {
@@ -35,6 +38,20 @@ public class SolitacaoController {
     public ResponseEntity<Page<SolicitacaoListagemDTO>> listarSolicitacoesEstudante (@AuthenticationPrincipal Usuario usuario, Pageable paginacao) {
         Page<SolicitacaoListagemDTO> solicitacoes = solicitacaoService.listarSolicitacoesPorAluno(paginacao, usuario);
         return ResponseEntity.ok(solicitacoes);
+    }
+
+    @GetMapping
+    public Page<SolicitacaoListagemDTO> listarSolicitacoes(
+            @AuthenticationPrincipal Usuario usuario,
+            @RequestParam(required = false) List<String> status,
+            @RequestParam(required = false) List<String> tipo,
+            @RequestParam(required = false) String tituloTema,
+            @RequestParam(required = false) String nomeProfessor,
+            @RequestParam(required = false) String nomeEstudante,
+            Pageable pageable
+    ) {
+        FiltroSolicitacao filtro = new FiltroSolicitacao(status, tipo, tituloTema, nomeProfessor, nomeEstudante);
+        return solicitacaoService.buscarSolicitacoesComFiltros(usuario, filtro, pageable);
     }
 
     @PostMapping("/solicitarOrientacao/{estudanteId}/{professorId}")

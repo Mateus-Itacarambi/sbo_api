@@ -4,16 +4,19 @@ package ifb.sbo.api.domain.solicitacao;
 import ifb.sbo.api.domain.estudante.Estudante;
 import ifb.sbo.api.domain.professor.Professor;
 import ifb.sbo.api.domain.tema.Tema;
+import jakarta.annotation.Nullable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
 
-public interface SolicitacaoRepository extends JpaRepository<Solicitacao, Long> {
+public interface SolicitacaoRepository extends JpaRepository<Solicitacao, Long>, JpaSpecificationExecutor<Solicitacao> {
     @Query("select count(*) from Solicitacao s where s.tema.id = :id and s.status = :status")
     int countByTemaAndStatus(@Param("id") Long temaId, StatusSolicitacao status);
 
@@ -38,4 +41,6 @@ public interface SolicitacaoRepository extends JpaRepository<Solicitacao, Long> 
     int countByStatusAndEstudante (StatusSolicitacao status, Long estudanteId);
 
     Optional<Solicitacao> findByTemaId(Long temaId);
+
+    Page<Solicitacao> findAll(@Nullable Specification<Solicitacao> spec, Pageable pageable);
 }

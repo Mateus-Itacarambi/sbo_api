@@ -15,6 +15,7 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -297,6 +298,19 @@ public class SolitacaoService {
     public Page<SolicitacaoListagemDTO> listarSolicitacoesPorAluno(@PageableDefault Pageable paginacao, Usuario usuario) {
         var estudante = estudanteService.buscarEstudante(usuario.getId());
         return solicitacaoRepository.findAllByEstudante(paginacao, estudante)
+                .map(this::mapearParaDTO);
+    }
+
+    public Page<SolicitacaoListagemDTO> buscarSolicitacoesComFiltros(Usuario usuario, FiltroSolicitacao filtro, Pageable pageable) {
+        Specification<Solicitacao> spec = Specification.where(SolicitacaoSpecification.comFiltros(filtro));
+
+        if (usuario instanceof Professor professor) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("professor"), professor));
+        } else if (usuario instanceof Estudante estudante) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("estudante"), estudante));
+        }
+
+        return solicitacaoRepository.findAll(spec, pageable)
                 .map(this::mapearParaDTO);
     }
 
