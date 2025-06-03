@@ -10,6 +10,7 @@ import ifb.sbo.api.domain.tema.TemaDetalhaSolicitacaoDTO;
 import ifb.sbo.api.domain.tema.TemaService;
 import ifb.sbo.api.domain.usuario.Usuario;
 import ifb.sbo.api.domain.usuario.UsuarioService;
+import ifb.sbo.api.domain.usuario.UsuarioSimplesDTO;
 import ifb.sbo.api.infra.exception.ConflitoException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -140,12 +141,10 @@ public class SolitacaoService {
         return detalharSolicitacao(solicitacaoId);
     }
 
-    public void cancelarSolicitacao(Long temaId, Usuario usuario, SolicitacaoMotivoDTO dados) {
-//        var solicitacao = buscarSolicitacaoPorTema(temaId);
+    public SolicitacaoListagemDTO cancelarSolicitacao(Long temaId, Usuario usuario, SolicitacaoMotivoDTO dados) {
         var solicitacao = buscarSolicitacao(temaId);
         solicitacaoConcluida(solicitacao);
 
-//        var usuario = usuarioService.buscarUsuario(usuarioId);
         usuarioService.verificarUsuarioSolicitacao(usuario.getId(), solicitacao);
 
         verificarProfessorCancelar(usuario, solicitacao, dados.motivo());
@@ -197,7 +196,6 @@ public class SolitacaoService {
                                         StatusSolicitacao.CANCELADA.toString()
                                 )
                         );
-//                notificacaoService.criarNotificacao(estudante, solicitacao.getProfessor(), "Solicitação de orientação cancelada por ", solicitacao, StatusSolicitacao.CONCLUIDA.toString());
             }
         } else if (usuario instanceof Professor professor && solicitacao.getStatus() != StatusSolicitacao.PENDENTE) {
             if (solicitacao.getTipo() == TipoSolicitacao.TEMA) {
@@ -231,6 +229,8 @@ public class SolitacaoService {
         solicitacaoRepository.save(solicitacao);
 
         maximoOrientacoesAtingida(usuario.getId(), solicitacao);
+
+        return detalharSolicitacao(solicitacao.getId());
     }
 
     @Transactional
@@ -282,23 +282,6 @@ public class SolitacaoService {
         notificacaoService.criarNotificacao(estudante, professor, mensagem, solicitacao, TipoNotificacao.TEMA.toString());
 
         return detalharSolicitacao(solicitacao.getId());
-    }
-
-    public Page<SolicitacaoListagemDTO> listarSolicitacoesPaginados(@PageableDefault Pageable paginacao) {
-        return solicitacaoRepository.findAll(paginacao)
-                .map(this::mapearParaDTO);
-    }
-
-    public Page<SolicitacaoListagemDTO> listarSolicitacoesPorProfessor(@PageableDefault Pageable paginacao, Usuario usuario) {
-        var professor = professorService.buscarProfessor(usuario.getId());
-        return solicitacaoRepository.findAllByProfessor(paginacao, professor)
-                .map(this::mapearParaDTO);
-    }
-
-    public Page<SolicitacaoListagemDTO> listarSolicitacoesPorAluno(@PageableDefault Pageable paginacao, Usuario usuario) {
-        var estudante = estudanteService.buscarEstudante(usuario.getId());
-        return solicitacaoRepository.findAllByEstudante(paginacao, estudante)
-                .map(this::mapearParaDTO);
     }
 
     public Page<SolicitacaoListagemDTO> buscarSolicitacoesComFiltros(Usuario usuario, FiltroSolicitacao filtro, Pageable pageable) {
@@ -415,11 +398,13 @@ public class SolitacaoService {
     }
 
     private SolicitacaoListagemDTO mapearParaDTO(Solicitacao solicitacao) {
-        List<EstudanteDetalhaDTO> estudantesDTO = solicitacao.getTema().getEstudantes()
+        List<UsuarioSimplesDTO> estudantesDTO = solicitacao.getTema().getEstudantes()
                 .stream()
-                .map(estudante -> new EstudanteDetalhaDTO(
+                .map(estudante -> new UsuarioSimplesDTO(
                         estudante.getId(),
-                        estudante.getNome())).toList();
+                        estudante.getNome(),
+                        estudante.getRole().toString(),
+                        estudante.getMatricula())).toList();
 
         return new SolicitacaoListagemDTO(
                 solicitacao.getId(),
@@ -433,13 +418,17 @@ public class SolitacaoService {
                         solicitacao.getTema().getPalavrasChave(),
                         estudantesDTO
                 ),
-                new ProfessorDetalhaDTO(
+                new UsuarioSimplesDTO(
                         solicitacao.getProfessor().getId(),
-                        solicitacao.getProfessor().getNome()
+                        solicitacao.getProfessor().getNome(),
+                        solicitacao.getProfessor().getRole().toString(),
+                        solicitacao.getProfessor().getIdLattes()
                 ),
-                solicitacao.getEstudante() != null ?  new EstudanteDetalhaDTO(
-                        solicitacao.getEstudante().getId(),
-                        solicitacao.getEstudante().getNome()
+                solicitacao.getEstudante() != null ?  new UsuarioSimplesDTO(
+                solicitacao.getEstudante().getId(),
+                solicitacao.getEstudante().getNome(),
+                solicitacao.getEstudante().getRole().toString(),
+                solicitacao.getEstudante().getMatricula()
                 ) : null,
                 solicitacao.getMotivo(),
                 solicitacao.getTipo()

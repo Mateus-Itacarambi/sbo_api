@@ -28,18 +28,6 @@ public class SolitacaoController {
 //        return ResponseEntity.ok(solicitacoes);
 //    }
 
-    @GetMapping("/professor")
-    public ResponseEntity<Page<SolicitacaoListagemDTO>> listarSolicitacoesProfessor (@AuthenticationPrincipal Usuario usuario, Pageable paginacao) {
-        Page<SolicitacaoListagemDTO> solicitacoes = solicitacaoService.listarSolicitacoesPorProfessor(paginacao, usuario);
-        return ResponseEntity.ok(solicitacoes);
-    }
-
-    @GetMapping("/estudante")
-    public ResponseEntity<Page<SolicitacaoListagemDTO>> listarSolicitacoesEstudante (@AuthenticationPrincipal Usuario usuario, Pageable paginacao) {
-        Page<SolicitacaoListagemDTO> solicitacoes = solicitacaoService.listarSolicitacoesPorAluno(paginacao, usuario);
-        return ResponseEntity.ok(solicitacoes);
-    }
-
     @GetMapping
     public Page<SolicitacaoListagemDTO> listarSolicitacoes(
             @AuthenticationPrincipal Usuario usuario,
@@ -72,10 +60,10 @@ public class SolitacaoController {
         return ResponseEntity.created(uri).body(solicitacao);
     }
 
-    @DeleteMapping("/cancelar/{temaId}")
+    @PutMapping("/cancelar/{temaId}")
     public ResponseEntity cancelarSolicitacao(@PathVariable Long temaId, @AuthenticationPrincipal Usuario usuario, @RequestBody SolicitacaoMotivoDTO dados) {
-        solicitacaoService.cancelarSolicitacao(temaId, usuario, dados);
-        return ResponseEntity.noContent().build();
+        var solicitacao = solicitacaoService.cancelarSolicitacao(temaId, usuario, dados);
+        return ResponseEntity.ok(solicitacao);
     }
 
     @PutMapping("/{solicitacaoId}/rejeitar/{usuarioId}")

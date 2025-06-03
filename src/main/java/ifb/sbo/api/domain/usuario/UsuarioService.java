@@ -70,11 +70,11 @@ public class UsuarioService {
 
         if (usuario instanceof Professor professor) {
             if (solicitacao.getProfessor() == null || !solicitacao.getProfessor().getId().equals(professor.getId())) {
-                throw new ConflitoException("Permissão negada: Você não está associado a esta solicitação.");
+                throw new ConflitoException("Você não está associado a esta solicitação.");
             }
         } else if (usuario instanceof Estudante estudante) {
-            if (solicitacao.getTema().getEstudantes() == null || solicitacao.getTema().getEstudantes().stream().noneMatch(e -> e.getId().equals(estudante.getId()))) {
-                throw new ConflitoException("Permissão negada: Você não está associado a esta solicitação.");
+            if (solicitacao.getEstudante() == null || !solicitacao.getEstudante().getId().equals(estudante.getId())) {
+                throw new ConflitoException("Somente o dono da solicitação pode cancelar!");
             }
         } else {
             throw new EntityNotFoundException("Tipo de usuário inválido.");
