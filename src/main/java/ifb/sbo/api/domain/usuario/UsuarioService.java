@@ -65,9 +65,7 @@ public class UsuarioService {
         }
     }
 
-    public void verificarUsuarioSolicitacao(Long usuarioId, Solicitacao solicitacao) {
-        var usuario = buscarUsuario(usuarioId);
-
+    public void verificarUsuarioSolicitacao(Usuario usuario, Solicitacao solicitacao) {
         if (usuario instanceof Professor professor) {
             if (solicitacao.getProfessor() == null || !solicitacao.getProfessor().getId().equals(professor.getId())) {
                 throw new ConflitoException("Você não está associado a esta solicitação.");
@@ -81,17 +79,13 @@ public class UsuarioService {
         }
     }
 
-    public void permissaoRejeitar(Long usuarioId) {
-        var usuario = buscarUsuario(usuarioId);
-
+    public void permissaoRejeitar(Usuario usuario) {
         if (usuario instanceof Estudante) {
             throw new ConflitoException("Você não tem permissão para rejeitar essa solicitação!");
         }
     }
 
-    public void permissaoAprovar(Long usuarioId) {
-        var usuario = buscarUsuario(usuarioId);
-
+    public void permissaoAprovar(Usuario usuario) {
         if (usuario instanceof Estudante) {
             throw new ConflitoException("Você não tem permissão para aprovar essa solicitação!");
         }

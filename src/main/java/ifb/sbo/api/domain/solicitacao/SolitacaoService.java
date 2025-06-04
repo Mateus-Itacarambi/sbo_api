@@ -78,11 +78,11 @@ public class SolitacaoService {
     }
 
     @Transactional
-    public SolicitacaoListagemDTO rejeitarSolicitacao(Long solicitacaoId, Long usuarioId, SolicitacaoMotivoDTO dados) {
+    public SolicitacaoListagemDTO rejeitarSolicitacao(Long solicitacaoId, Usuario usuario, SolicitacaoMotivoDTO dados) {
         var solicitacao = buscarSolicitacao(solicitacaoId);
 
-        usuarioService.permissaoRejeitar(usuarioId);
-        usuarioService.verificarUsuarioSolicitacao(usuarioId, solicitacao);
+        usuarioService.permissaoRejeitar(usuario);
+        usuarioService.verificarUsuarioSolicitacao(usuario, solicitacao);
 
         verificarSolicitacao(solicitacao);
 
@@ -103,15 +103,15 @@ public class SolitacaoService {
     }
 
     @Transactional
-    public SolicitacaoListagemDTO aprovarSolicitacao(Long solicitacaoId, Long usuarioId) {
+    public SolicitacaoListagemDTO aprovarSolicitacao(Long solicitacaoId, Usuario usuario) {
         var solicitacao = buscarSolicitacao(solicitacaoId);
 
-        usuarioService.permissaoAprovar(usuarioId);
-        usuarioService.verificarUsuarioSolicitacao(usuarioId, solicitacao);
+        usuarioService.permissaoAprovar(usuario);
+        usuarioService.verificarUsuarioSolicitacao(usuario, solicitacao);
 
         verificarSolicitacao(solicitacao);
 
-        var professor = professorService.buscarProfessor(usuarioId);
+        var professor = professorService.buscarProfessor(usuario.getId());
 
         maximoOrientacoes(professor);
 
@@ -136,16 +136,16 @@ public class SolitacaoService {
         solicitacoes.forEach(s -> s.setStatus(StatusSolicitacao.CANCELADA));
         solicitacaoRepository.saveAll(solicitacoes);
 
-        maximoOrientacoesAtingida(usuarioId, solicitacao);
+        maximoOrientacoesAtingida(usuario.getId(), solicitacao);
 
         return detalharSolicitacao(solicitacaoId);
     }
 
-    public SolicitacaoListagemDTO cancelarSolicitacao(Long temaId, Usuario usuario, SolicitacaoMotivoDTO dados) {
-        var solicitacao = buscarSolicitacao(temaId);
+    public SolicitacaoListagemDTO cancelarSolicitacao(Long solicitacaoId, Usuario usuario, SolicitacaoMotivoDTO dados) {
+        var solicitacao = buscarSolicitacao(solicitacaoId);
         solicitacaoConcluida(solicitacao);
 
-        usuarioService.verificarUsuarioSolicitacao(usuario.getId(), solicitacao);
+        usuarioService.verificarUsuarioSolicitacao(usuario, solicitacao);
 
         verificarProfessorCancelar(usuario, solicitacao, dados.motivo());
 
@@ -234,11 +234,11 @@ public class SolitacaoService {
     }
 
     @Transactional
-    public SolicitacaoListagemDTO concluirSolicitacao(Long solicitacaoId, Long usuarioId) {
+    public SolicitacaoListagemDTO concluirSolicitacao(Long solicitacaoId, Usuario usuario) {
         var solicitacao = buscarSolicitacao(solicitacaoId);
 
-        usuarioService.permissaoAprovar(usuarioId);
-        usuarioService.verificarUsuarioSolicitacao(usuarioId, solicitacao);
+        usuarioService.permissaoAprovar(usuario);
+        usuarioService.verificarUsuarioSolicitacao(usuario, solicitacao);
 
         solicitacaoAprovada(solicitacao);
 
@@ -256,7 +256,7 @@ public class SolitacaoService {
 
 //        estudantes.forEach(estudante -> notificacaoService.criarNotificacao(professor, estudante, "Sua orientação foi concluída pelo professor(a) ", solicitacao, StatusSolicitacao.CONCLUIDA.toString()));
 
-        maximoOrientacoesAtingida(usuarioId, solicitacao);
+        maximoOrientacoesAtingida(usuario.getId(), solicitacao);
 
         return detalharSolicitacao(solicitacaoId);
     }

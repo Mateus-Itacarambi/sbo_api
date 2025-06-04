@@ -5,6 +5,7 @@ import ifb.sbo.api.domain.solicitacao.SolicitacaoListagemDTO;
 import ifb.sbo.api.domain.solicitacao.SolicitacaoMotivoDTO;
 import ifb.sbo.api.domain.solicitacao.SolitacaoService;
 import ifb.sbo.api.domain.usuario.Usuario;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -60,27 +61,27 @@ public class SolitacaoController {
         return ResponseEntity.created(uri).body(solicitacao);
     }
 
-    @PutMapping("/cancelar/{temaId}")
-    public ResponseEntity cancelarSolicitacao(@PathVariable Long temaId, @AuthenticationPrincipal Usuario usuario, @RequestBody SolicitacaoMotivoDTO dados) {
-        var solicitacao = solicitacaoService.cancelarSolicitacao(temaId, usuario, dados);
+    @PutMapping("/cancelar/{solicitacaoId}")
+    public ResponseEntity cancelarSolicitacao(@PathVariable Long solicitacaoId, @AuthenticationPrincipal Usuario usuario, @RequestBody @Valid SolicitacaoMotivoDTO dados) {
+        var solicitacao = solicitacaoService.cancelarSolicitacao(solicitacaoId, usuario, dados);
         return ResponseEntity.ok(solicitacao);
     }
 
-    @PutMapping("/{solicitacaoId}/rejeitar/{usuarioId}")
-    public ResponseEntity<SolicitacaoListagemDTO> rejeitarSolicitacao(@PathVariable Long solicitacaoId, @PathVariable Long usuarioId, @RequestBody SolicitacaoMotivoDTO dados) {
-        var solicitacao = solicitacaoService.rejeitarSolicitacao(solicitacaoId, usuarioId, dados);
+    @PutMapping("/rejeitar/{solicitacaoId}")
+    public ResponseEntity<SolicitacaoListagemDTO> rejeitarSolicitacao(@PathVariable Long solicitacaoId, @AuthenticationPrincipal Usuario usuario, @RequestBody @Valid SolicitacaoMotivoDTO dados) {
+        var solicitacao = solicitacaoService.rejeitarSolicitacao(solicitacaoId, usuario, dados);
         return ResponseEntity.ok(solicitacao);
     }
 
-    @PutMapping("/{solicitacaoId}/aprovar/{usuarioId}")
-    public ResponseEntity<SolicitacaoListagemDTO> aprovarSolicitacao(@PathVariable Long solicitacaoId, @PathVariable Long usuarioId) {
-        var solicitacao = solicitacaoService.aprovarSolicitacao(solicitacaoId, usuarioId);
+    @PutMapping("/{solicitacaoId}/aprovar")
+    public ResponseEntity<SolicitacaoListagemDTO> aprovarSolicitacao(@PathVariable Long solicitacaoId, @AuthenticationPrincipal Usuario usuario) {
+        var solicitacao = solicitacaoService.aprovarSolicitacao(solicitacaoId, usuario);
         return ResponseEntity.ok(solicitacao);
     }
 
-    @PutMapping("/{solicitacaoId}/concluir/{usuarioId}")
-    public ResponseEntity<SolicitacaoListagemDTO> concluirSolicitacao(@PathVariable Long solicitacaoId, @PathVariable Long usuarioId) {
-        var solicitacao = solicitacaoService.concluirSolicitacao(solicitacaoId, usuarioId);
+    @PutMapping("/{solicitacaoId}/concluir")
+    public ResponseEntity<SolicitacaoListagemDTO> concluirSolicitacao(@PathVariable Long solicitacaoId, @AuthenticationPrincipal Usuario usuario) {
+        var solicitacao = solicitacaoService.concluirSolicitacao(solicitacaoId, usuario);
         return ResponseEntity.ok(solicitacao);
     }
 
