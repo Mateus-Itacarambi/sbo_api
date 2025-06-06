@@ -19,6 +19,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -52,13 +53,6 @@ public class SolitacaoService {
 
     Clock clock = Clock.systemDefaultZone();
 
-//    public SolitacaoService(EstudanteService estudanteService, ProfessorService professorService, UsuarioService usuarioService, NotificacaoService notificacaoService) {
-//        this.estudanteService = estudanteService;
-//        this.professorService = professorService;
-//        this.usuarioService = usuarioService;
-//        this.notificacaoService = notificacaoService;
-//    }
-
     public SolicitacaoListagemDTO solicitarOrientacao(Usuario usuario, Long professorId) {
         var estudante = estudanteService.buscarEstudante(usuario.getId());
         estudanteService.estudanteTemTema(estudante);
@@ -84,6 +78,7 @@ public class SolitacaoService {
 
     @Transactional
     public SolicitacaoListagemDTO rejeitarSolicitacao(Long solicitacaoId, Usuario usuario, SolicitacaoMotivoDTO dados) {
+        System.out.println("USUARIO LOGADO: " + usuario.getNome() + " - " + usuario.getId());
         var solicitacao = buscarSolicitacao(solicitacaoId);
 
         usuarioService.permissaoRejeitar(usuario);
@@ -301,14 +296,17 @@ public class SolitacaoService {
         Specification<Solicitacao> spec = Specification.where(SolicitacaoSpecification.comFiltros(filtro));
 
         if (usuario instanceof Professor professor) {
-            spec = spec.and((root, query, cb) -> cb.equal(root.get("professor"), professor));
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("professor").get("id"), professor.getId()));
         } else if (usuario instanceof Estudante estudante) {
-            spec = spec.and((root, query, cb) -> cb.equal(root.get("estudante"), estudante));
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("estudante").get("id"), estudante.getId()));
+        } else {
+            throw new AccessDeniedException("Usuário não autorizado.");
         }
 
         return solicitacaoRepository.findAll(spec, pageable)
                 .map(this::mapearParaDTO);
     }
+
 
     public SolicitacaoListagemDTO detalharSolicitacao(Long solicitacaoId) {
         var solicitacao = buscarSolicitacao(solicitacaoId);
@@ -406,8 +404,8 @@ public class SolitacaoService {
             if (solicitacao.getStatus().equals(StatusSolicitacao.PENDENTE)) {
                 throw new ConflitoException("Não é possível cancelar esta solicitação!");
             }
-            solicitacao.setMotivo(motivo);
         }
+        solicitacao.setMotivo(motivo);
     }
 
     private SolicitacaoListagemDTO mapearParaDTO(Solicitacao solicitacao) {

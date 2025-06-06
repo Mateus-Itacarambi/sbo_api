@@ -23,12 +23,6 @@ public class SolitacaoController {
     @Autowired
     private SolitacaoService solicitacaoService;
 
-//    @GetMapping
-//    public ResponseEntity<Page<SolicitacaoListagemDTO>> listar (Pageable paginacao) {
-//        Page<SolicitacaoListagemDTO> solicitacoes = solicitacaoService.listarSolicitacoesPaginados(paginacao);
-//        return ResponseEntity.ok(solicitacoes);
-//    }
-
     @GetMapping
     public Page<SolicitacaoListagemDTO> listarSolicitacoes(
             @AuthenticationPrincipal Usuario usuario,
@@ -79,7 +73,7 @@ public class SolitacaoController {
         return ResponseEntity.ok(solicitacao);
     }
 
-    @PutMapping("/{solicitacaoId}/concluir")
+    @PutMapping("/concluir/{solicitacaoId}")
     public ResponseEntity<SolicitacaoListagemDTO> concluirSolicitacao(@PathVariable Long solicitacaoId, @AuthenticationPrincipal Usuario usuario) {
         var solicitacao = solicitacaoService.concluirSolicitacao(solicitacaoId, usuario);
         return ResponseEntity.ok(solicitacao);

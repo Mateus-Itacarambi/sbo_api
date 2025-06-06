@@ -9,6 +9,7 @@ import ifb.sbo.api.domain.curso.CursoRepository;
 import ifb.sbo.api.domain.estudante.Estudante;
 import ifb.sbo.api.domain.estudante.EstudanteDetalhaDTO;
 import ifb.sbo.api.domain.formacao.*;
+import ifb.sbo.api.domain.solicitacao.Solicitacao;
 import ifb.sbo.api.domain.solicitacao.SolicitacaoRepository;
 import ifb.sbo.api.domain.solicitacao.StatusSolicitacao;
 import ifb.sbo.api.domain.tema.TemaDetalhaDTO;
@@ -329,11 +330,11 @@ public class ProfessorService {
 
         return professorRepository.findAll(spec, pageable)
                 .map(professor -> {
-                    boolean solicitacaoPendente = solicitacaoRepository.existsByEstudanteIdAndProfessorIdAndStatus(
+                    var solicitacao = solicitacaoRepository.findByEstudanteIdAndProfessorIdAndStatus(
                             estudanteId, professor.getId(), StatusSolicitacao.PENDENTE
                     );
 
-                    return mapearParaListaDTO(professor, solicitacaoPendente);
+                    return mapearParaListaDTO(professor, solicitacao.isPresent(), solicitacao.map(Solicitacao::getId).orElse(null));
                 });
     }
 
@@ -384,7 +385,7 @@ public class ProfessorService {
         );
     }
 
-    public ProfessorBuscaDTO mapearParaListaDTO(Professor professor, Boolean solicitacaoPendente) {
+    public ProfessorBuscaDTO mapearParaListaDTO(Professor professor, Boolean solicitacaoPendente, Long idSolicitacao) {
         List<CursoDetalhaDTO> cursosDTO = professor.getCursos()
                 .stream()
                 .map(curso -> new CursoDetalhaDTO(
@@ -406,7 +407,8 @@ public class ProfessorService {
                 String.valueOf(professor.getDisponibilidade()),
                 cursosDTO,
                 areasInteresseDTO,
-                solicitacaoPendente
+                solicitacaoPendente,
+                idSolicitacao
         );
     }
 
