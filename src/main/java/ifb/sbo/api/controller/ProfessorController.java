@@ -7,6 +7,7 @@ import ifb.sbo.api.domain.formacao.FormacaoCadastroDTO;
 import ifb.sbo.api.domain.formacao.FormacaoListagemDTO;
 import ifb.sbo.api.domain.formacao.FormacaoRepository;
 import ifb.sbo.api.domain.professor.*;
+import ifb.sbo.api.domain.usuario.Usuario;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
@@ -18,6 +19,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -53,10 +55,11 @@ public class ProfessorController {
             @RequestParam(required = false) List<String> curso,
             @RequestParam(required = false) List<String> disponibilidade,
             @RequestParam(required = false) List<String> areaInteresse,
-            Pageable pageable
-    ) {
+            Pageable pageable,
+            @AuthenticationPrincipal Usuario usuario
+            ) {
         FiltroProfessor filtro = new FiltroProfessor(nome, curso, disponibilidade, areaInteresse);
-        return professorService.listarProfessoresComFiltros(filtro, pageable);
+        return professorService.listarProfessoresComFiltros(filtro, pageable, usuario);
     }
 
     @GetMapping("/lista")

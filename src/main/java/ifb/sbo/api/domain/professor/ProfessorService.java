@@ -6,10 +6,14 @@ import ifb.sbo.api.domain.area_interesse.AreaInteresseRepository;
 import ifb.sbo.api.domain.curso.Curso;
 import ifb.sbo.api.domain.curso.CursoDetalhaDTO;
 import ifb.sbo.api.domain.curso.CursoRepository;
+import ifb.sbo.api.domain.estudante.Estudante;
 import ifb.sbo.api.domain.estudante.EstudanteDetalhaDTO;
 import ifb.sbo.api.domain.formacao.*;
+import ifb.sbo.api.domain.solicitacao.SolicitacaoRepository;
+import ifb.sbo.api.domain.solicitacao.StatusSolicitacao;
 import ifb.sbo.api.domain.tema.TemaDetalhaDTO;
 import ifb.sbo.api.domain.usuario.TipoUsuario;
+import ifb.sbo.api.domain.usuario.Usuario;
 import ifb.sbo.api.domain.usuario.UsuarioRepository;
 import ifb.sbo.api.domain.usuario.UsuarioService;
 import ifb.sbo.api.infra.exception.ConflitoException;
@@ -22,6 +26,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -62,6 +67,9 @@ public class ProfessorService {
 
     @Autowired
     private EnviarEmail emailService;
+
+    @Autowired
+    private SolicitacaoRepository solicitacaoRepository;
 
     public ProfessorListagemDTO cadastrar(ProfessorCadastroDTO dados) {
         usuarioService.buscarEmail(dados.email());
@@ -308,12 +316,25 @@ public class ProfessorService {
                 .map(this::mapearParaDTO);
     }
 
-    public Page<ProfessorBuscaDTO> listarProfessoresComFiltros(FiltroProfessor filtro, Pageable pageable) {
+    public Page<ProfessorBuscaDTO> listarProfessoresComFiltros(FiltroProfessor filtro, Pageable pageable, Usuario usuario) {
         Specification<Professor> spec = ProfessorSpecification.comFiltros(filtro);
 
-        return professorRepository
-                .findAll(spec, pageable)
-                .map(this::mapearParaListaDTO);
+        Long estudanteId;
+
+        if (usuario instanceof Estudante estudante) {
+            estudanteId = estudante.getId();
+        } else {
+            estudanteId = null;
+        }
+
+        return professorRepository.findAll(spec, pageable)
+                .map(professor -> {
+                    boolean solicitacaoPendente = solicitacaoRepository.existsByEstudanteIdAndProfessorIdAndStatus(
+                            estudanteId, professor.getId(), StatusSolicitacao.PENDENTE
+                    );
+
+                    return mapearParaListaDTO(professor, solicitacaoPendente);
+                });
     }
 
     public ProfessorListagemDTO detalharProfessor(Long professorId) {
@@ -363,7 +384,7 @@ public class ProfessorService {
         );
     }
 
-    public ProfessorBuscaDTO mapearParaListaDTO(Professor professor) {
+    public ProfessorBuscaDTO mapearParaListaDTO(Professor professor, Boolean solicitacaoPendente) {
         List<CursoDetalhaDTO> cursosDTO = professor.getCursos()
                 .stream()
                 .map(curso -> new CursoDetalhaDTO(
@@ -384,7 +405,8 @@ public class ProfessorService {
                 professor.getIdLattes(),
                 String.valueOf(professor.getDisponibilidade()),
                 cursosDTO,
-                areasInteresseDTO
+                areasInteresseDTO,
+                solicitacaoPendente
         );
     }
 

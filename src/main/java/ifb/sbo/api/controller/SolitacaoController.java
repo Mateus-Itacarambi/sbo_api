@@ -43,9 +43,9 @@ public class SolitacaoController {
         return solicitacaoService.buscarSolicitacoesComFiltros(usuario, filtro, pageable);
     }
 
-    @PostMapping("/solicitarOrientacao/{estudanteId}/{professorId}")
-    public ResponseEntity solicitarOrientacao(@PathVariable Long estudanteId, @PathVariable Long professorId, UriComponentsBuilder uriBuilder) {
-        var solicitacao = solicitacaoService.solicitarOrientacao(estudanteId, professorId);
+    @PostMapping("/solicitarOrientacao/{professorId}")
+    public ResponseEntity solicitarOrientacao(@AuthenticationPrincipal Usuario usuario, @PathVariable Long professorId, UriComponentsBuilder uriBuilder) {
+        var solicitacao = solicitacaoService.solicitarOrientacao(usuario, professorId);
 
         var uri = uriBuilder.path("/solicitacoes/{id}").buildAndExpand(solicitacao.id()).toUri();
 
@@ -62,7 +62,7 @@ public class SolitacaoController {
     }
 
     @PutMapping("/cancelar/{solicitacaoId}")
-    public ResponseEntity cancelarSolicitacao(@PathVariable Long solicitacaoId, @AuthenticationPrincipal Usuario usuario, @RequestBody @Valid SolicitacaoMotivoDTO dados) {
+    public ResponseEntity<?> cancelarSolicitacao(@PathVariable Long solicitacaoId, @AuthenticationPrincipal Usuario usuario, @RequestBody @Valid SolicitacaoMotivoDTO dados) {
         var solicitacao = solicitacaoService.cancelarSolicitacao(solicitacaoId, usuario, dados);
         return ResponseEntity.ok(solicitacao);
     }
@@ -73,7 +73,7 @@ public class SolitacaoController {
         return ResponseEntity.ok(solicitacao);
     }
 
-    @PutMapping("/{solicitacaoId}/aprovar")
+    @PutMapping("/aprovar/{solicitacaoId}")
     public ResponseEntity<SolicitacaoListagemDTO> aprovarSolicitacao(@PathVariable Long solicitacaoId, @AuthenticationPrincipal Usuario usuario) {
         var solicitacao = solicitacaoService.aprovarSolicitacao(solicitacaoId, usuario);
         return ResponseEntity.ok(solicitacao);

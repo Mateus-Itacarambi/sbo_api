@@ -2,6 +2,7 @@ package ifb.sbo.api.domain.solicitacao;
 import ifb.sbo.api.domain.estudante.Estudante;
 import ifb.sbo.api.domain.estudante.EstudanteDetalhaDTO;
 import ifb.sbo.api.domain.estudante.EstudanteService;
+import ifb.sbo.api.domain.notificacao.NotificacaoRepository;
 import ifb.sbo.api.domain.notificacao.NotificacaoService;
 import ifb.sbo.api.domain.notificacao.TipoNotificacao;
 import ifb.sbo.api.domain.professor.*;
@@ -37,28 +38,32 @@ public class SolitacaoService {
     @Autowired
     private ProfessorRepository professorRepository;
 
-    private final EstudanteService estudanteService;
+    @Autowired
+    private EstudanteService estudanteService;
 
-    private final ProfessorService professorService;
+    @Autowired
+    private ProfessorService professorService;
 
-    private final UsuarioService usuarioService;
+    @Autowired
+    private UsuarioService usuarioService;
 
-    private final NotificacaoService notificacaoService;
+    @Autowired
+    private NotificacaoService notificacaoService;
 
     Clock clock = Clock.systemDefaultZone();
 
-    public SolitacaoService(EstudanteService estudanteService, ProfessorService professorService, UsuarioService usuarioService, NotificacaoService notificacaoService) {
-        this.estudanteService = estudanteService;
-        this.professorService = professorService;
-        this.usuarioService = usuarioService;
-        this.notificacaoService = notificacaoService;
-    }
+//    public SolitacaoService(EstudanteService estudanteService, ProfessorService professorService, UsuarioService usuarioService, NotificacaoService notificacaoService) {
+//        this.estudanteService = estudanteService;
+//        this.professorService = professorService;
+//        this.usuarioService = usuarioService;
+//        this.notificacaoService = notificacaoService;
+//    }
 
-    public SolicitacaoListagemDTO solicitarOrientacao(Long estudanteId, Long professorId) {
-        var estudante = estudanteService.buscarEstudante(estudanteId);
+    public SolicitacaoListagemDTO solicitarOrientacao(Usuario usuario, Long professorId) {
+        var estudante = estudanteService.buscarEstudante(usuario.getId());
         estudanteService.estudanteTemTema(estudante);
 
-        estudanteTemSolicitacaoAprovada(estudanteId);
+        estudanteTemSolicitacaoAprovada(estudante.getId());
 
         var tema = estudante.getTema();
 
@@ -141,96 +146,104 @@ public class SolitacaoService {
         return detalharSolicitacao(solicitacaoId);
     }
 
+    @Transactional
     public SolicitacaoListagemDTO cancelarSolicitacao(Long solicitacaoId, Usuario usuario, SolicitacaoMotivoDTO dados) {
         var solicitacao = buscarSolicitacao(solicitacaoId);
         solicitacaoConcluida(solicitacao);
 
-        usuarioService.verificarUsuarioSolicitacao(usuario, solicitacao);
+        if (solicitacao.getStatus().equals(StatusSolicitacao.PENDENTE)) {
+            var dto = mapearParaDTO(solicitacao);
+            notificacaoService.excluirNotificacao(solicitacao);
+            solicitacaoRepository.delete(solicitacao);
+            return dto;
+        } else {
+            usuarioService.verificarUsuarioSolicitacao(usuario, solicitacao);
 
-        verificarProfessorCancelar(usuario, solicitacao, dados.motivo());
+            verificarProfessorCancelar(usuario, solicitacao, dados.motivo());
 
-        verificarSolicitacao(solicitacao);
+            verificarSolicitacao(solicitacao);
 
-        var tema = temaService.buscarTema(solicitacao.getTema().getId());
+            var tema = temaService.buscarTema(solicitacao.getTema().getId());
 
-        tema.setStatus(StatusTema.RESERVADO);
-        tema.setProfessor(null);
+            tema.setStatus(StatusTema.RESERVADO);
+            tema.setProfessor(null);
 
-        if (solicitacao.getTipo() == TipoSolicitacao.TEMA) {
-            var professor = professorService.buscarProfessor(solicitacao.getProfessor().getId());
-
-            tema.setStatus(StatusTema.DISPONIVEL);
-            tema.setProfessor(professor);
-
-            List<Estudante> estudantes = tema.getEstudantes();
-            estudantes.forEach(e -> temaService.removerEstudanteDoTema(tema.getId(), professor.getId(), e.getMatricula()));
-        }
-
-        tema.setDataAtualizacao(LocalDate.now());
-
-        if (usuario instanceof Estudante estudante && solicitacao.getStatus() != StatusSolicitacao.PENDENTE) {
             if (solicitacao.getTipo() == TipoSolicitacao.TEMA) {
-                var mensagem = " cancelou a solicitação do tema “" + solicitacao.getTema() + "“.";
-                notificacaoService.criarNotificacao(estudante, solicitacao.getProfessor(), mensagem, solicitacao, StatusSolicitacao.CONCLUIDA.toString());
+                var professor = professorService.buscarProfessor(solicitacao.getProfessor().getId());
 
-                tema.getEstudantes().stream()
-                        .filter(e -> !e.getId().equals(estudante.getId()))
-                        .forEach(outroEstudante ->
-                                notificacaoService.criarNotificacao(
-                                        estudante,
-                                        outroEstudante,
-                                        mensagem,
-                                        solicitacao,
-                                        StatusSolicitacao.CANCELADA.toString()
-                                )
-                        );
-            } else {
-                tema.getEstudantes().stream()
-                        .filter(e -> !e.getId().equals(estudante.getId()))
-                        .forEach(outroEstudante ->
-                                notificacaoService.criarNotificacao(
-                                        estudante,
-                                        outroEstudante,
-                                        "Solicitação de orientação cancelada por ",
-                                        solicitacao,
-                                        StatusSolicitacao.CANCELADA.toString()
-                                )
-                        );
+                tema.setStatus(StatusTema.DISPONIVEL);
+                tema.setProfessor(professor);
+
+                List<Estudante> estudantes = tema.getEstudantes();
+                estudantes.forEach(e -> temaService.removerEstudanteDoTema(tema.getId(), professor.getId(), e.getMatricula()));
             }
-        } else if (usuario instanceof Professor professor && solicitacao.getStatus() != StatusSolicitacao.PENDENTE) {
-            if (solicitacao.getTipo() == TipoSolicitacao.TEMA) {
-                var mensagem = " cancelou a solicitação do tema “" + solicitacao.getTema() + "“.";
-                tema.getEstudantes()
-                        .forEach(estudante ->
-                                notificacaoService.criarNotificacao(
-                                        professor,
-                                        estudante,
-                                        mensagem,
-                                        solicitacao,
-                                        StatusSolicitacao.CANCELADA.toString()
-                                )
-                        );
-            } else {
-                tema.getEstudantes()
-                    .forEach(estudante ->
-                            notificacaoService.criarNotificacao(
-                                    professor,
-                                    estudante,
-                                    "Solicitação de orientação cancelada por ",
-                                    solicitacao,
-                                    StatusSolicitacao.CANCELADA.toString()
-                            )
-                    );
+
+            tema.setDataAtualizacao(LocalDate.now());
+
+            if (usuario instanceof Estudante estudante) {
+                if (solicitacao.getTipo() == TipoSolicitacao.TEMA) {
+                    var mensagem = " cancelou a solicitação do tema “" + solicitacao.getTema() + "“.";
+                    notificacaoService.criarNotificacao(estudante, solicitacao.getProfessor(), mensagem, solicitacao, StatusSolicitacao.CONCLUIDA.toString());
+
+                    tema.getEstudantes().stream()
+                            .filter(e -> !e.getId().equals(estudante.getId()))
+                            .forEach(outroEstudante ->
+                                    notificacaoService.criarNotificacao(
+                                            estudante,
+                                            outroEstudante,
+                                            mensagem,
+                                            solicitacao,
+                                            StatusSolicitacao.CANCELADA.toString()
+                                    )
+                            );
+                } else {
+                    tema.getEstudantes().stream()
+                            .filter(e -> !e.getId().equals(estudante.getId()))
+                            .forEach(outroEstudante ->
+                                    notificacaoService.criarNotificacao(
+                                            estudante,
+                                            outroEstudante,
+                                            "Solicitação de orientação cancelada por ",
+                                            solicitacao,
+                                            StatusSolicitacao.CANCELADA.toString()
+                                    )
+                            );
+                }
+            } else if (usuario instanceof Professor professor) {
+                if (solicitacao.getTipo() == TipoSolicitacao.TEMA) {
+                    var mensagem = " cancelou a solicitação do tema “" + solicitacao.getTema() + "“.";
+                    tema.getEstudantes()
+                            .forEach(estudante ->
+                                    notificacaoService.criarNotificacao(
+                                            professor,
+                                            estudante,
+                                            mensagem,
+                                            solicitacao,
+                                            StatusSolicitacao.CANCELADA.toString()
+                                    )
+                            );
+                } else {
+                    tema.getEstudantes()
+                            .forEach(estudante ->
+                                    notificacaoService.criarNotificacao(
+                                            professor,
+                                            estudante,
+                                            "Solicitação de orientação cancelada por ",
+                                            solicitacao,
+                                            StatusSolicitacao.CANCELADA.toString()
+                                    )
+                            );
+                }
             }
+
+            solicitacao.setStatus(StatusSolicitacao.CANCELADA);
+            solicitacao.setDataAtualizacao(LocalDateTime.now(clock));
+            solicitacaoRepository.save(solicitacao);
+
+            maximoOrientacoesAtingida(usuario.getId(), solicitacao);
+
+            return detalharSolicitacao(solicitacao.getId());
         }
-
-        solicitacao.setStatus(StatusSolicitacao.CANCELADA);
-        solicitacao.setDataAtualizacao(LocalDateTime.now(clock));
-        solicitacaoRepository.save(solicitacao);
-
-        maximoOrientacoesAtingida(usuario.getId(), solicitacao);
-
-        return detalharSolicitacao(solicitacao.getId());
     }
 
     @Transactional
@@ -313,7 +326,7 @@ public class SolitacaoService {
     }
 
     public void existeSolicitacaoTema(Long temaId) {
-        if (solicitacaoRepository.countByTemaAndStatus(temaId, StatusSolicitacao.PENDENTE) >= 3) {
+        if (solicitacaoRepository.countByTemaAndStatus(temaId, StatusSolicitacao.PENDENTE) >= 5) {
             throw new ConflitoException("Máximo de solicitações alcançada!");
         }
     }

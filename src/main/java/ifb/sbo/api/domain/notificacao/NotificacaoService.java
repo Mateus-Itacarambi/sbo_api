@@ -72,6 +72,14 @@ public class NotificacaoService {
         notificacaoRepository.saveAll(notificacoes);
     }
 
+    @Transactional
+    public void excluirNotificacao(Solicitacao solicitacao) {
+        Notificacao notificacao = notificacaoRepository.findBySolicitacao(solicitacao)
+                .orElseThrow(() -> new EntityNotFoundException("Notificação não encontrada"));
+
+        notificacaoRepository.delete(notificacao);
+    }
+
     public NotificacaoDTO toDTO(Notificacao notificacao) {
         return new NotificacaoDTO(
                 notificacao.getId(),

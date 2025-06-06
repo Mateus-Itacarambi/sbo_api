@@ -15,5 +15,6 @@ public record ProfessorBuscaDTO(
         String idLattes,
         String disponibilidade,
         List<CursoDetalhaDTO> cursos,
-        List<AreaInteresseDetalhaDTO> areasDeInteresse) {
+        List<AreaInteresseDetalhaDTO> areasDeInteresse,
+        Boolean solicitacaoPendente) {
 }
