@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class NotificacaoService {
@@ -73,11 +74,14 @@ public class NotificacaoService {
     }
 
     @Transactional
-    public void excluirNotificacao(Solicitacao solicitacao) {
-        Notificacao notificacao = notificacaoRepository.findBySolicitacao(solicitacao)
-                .orElseThrow(() -> new EntityNotFoundException("Notificação não encontrada"));
-
-        notificacaoRepository.delete(notificacao);
+    public void excluirNotificacao(Solicitacao solicitacao, Long idUsuario) {
+        notificacaoRepository.findBySolicitacao(solicitacao).ifPresent(notificacao -> {
+            notificacaoRepository.delete(notificacao);
+            messagingTemplate.convertAndSend(
+                    "/topic/notificacoes/" + idUsuario,
+                    Map.of("removerNotificacaoId", notificacao.getId())
+            );
+        });
     }
 
     public NotificacaoDTO toDTO(Notificacao notificacao) {

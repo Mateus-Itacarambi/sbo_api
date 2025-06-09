@@ -19,6 +19,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +28,7 @@ import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class SolitacaoService {
@@ -51,6 +53,9 @@ public class SolitacaoService {
     @Autowired
     private NotificacaoService notificacaoService;
 
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
+
     Clock clock = Clock.systemDefaultZone();
 
     public SolicitacaoListagemDTO solicitarOrientacao(Usuario usuario, Long professorId) {
@@ -73,7 +78,13 @@ public class SolitacaoService {
 
         notificacaoService.criarNotificacao(estudante, professor, "Nova solicitação de orientação: ", solicitacao, TipoNotificacao.ORIENTACAO.toString());
 
-        return detalharSolicitacao(solicitacao.getId());
+        SolicitacaoListagemDTO dto = detalharSolicitacao(solicitacao.getId());
+        messagingTemplate.convertAndSend(
+                "/topic/solicitacoes/" + professor.getId(),
+                dto
+        );
+
+        return dto;
     }
 
     @Transactional
@@ -99,7 +110,16 @@ public class SolitacaoService {
 
         tema.getEstudantes().forEach(e -> notificacaoService.criarNotificacao(solicitacao.getProfessor(), e, "Sua solicitação de orientação foi rejeitada pelo(a) professor(a) ", solicitacao, StatusSolicitacao.REJEITADA.toString()));
 
-        return detalharSolicitacao(solicitacaoId);
+        SolicitacaoListagemDTO dto = detalharSolicitacao(solicitacaoId);
+
+        tema.getEstudantes().forEach(e -> {
+            messagingTemplate.convertAndSend(
+                    "/topic/solicitacoes/" + e.getId(),
+                    dto
+            );
+        });
+
+        return dto;
     }
 
     @Transactional
@@ -138,7 +158,16 @@ public class SolitacaoService {
 
         maximoOrientacoesAtingida(usuario.getId(), solicitacao);
 
-        return detalharSolicitacao(solicitacaoId);
+        SolicitacaoListagemDTO dto = detalharSolicitacao(solicitacaoId);
+
+        tema.getEstudantes().forEach(e -> {
+            messagingTemplate.convertAndSend(
+                    "/topic/solicitacoes/" + e.getId(),
+                    dto
+            );
+        });
+
+        return dto;
     }
 
     @Transactional
@@ -148,8 +177,14 @@ public class SolitacaoService {
 
         if (solicitacao.getStatus().equals(StatusSolicitacao.PENDENTE)) {
             var dto = mapearParaDTO(solicitacao);
-            notificacaoService.excluirNotificacao(solicitacao);
+            notificacaoService.excluirNotificacao(solicitacao, solicitacao.getProfessor().getId());
             solicitacaoRepository.delete(solicitacao);
+
+            messagingTemplate.convertAndSend(
+                        "/topic/solicitacoes/" + solicitacao.getProfessor().getId(),
+                        Map.of("removerSolicitacaoId", solicitacao.getId())
+                );
+
             return dto;
         } else {
             usuarioService.verificarUsuarioSolicitacao(usuario, solicitacao);
@@ -237,7 +272,23 @@ public class SolitacaoService {
 
             maximoOrientacoesAtingida(usuario.getId(), solicitacao);
 
-            return detalharSolicitacao(solicitacao.getId());
+            SolicitacaoListagemDTO dto = detalharSolicitacao(solicitacao.getId());
+
+            if (usuario instanceof Professor) {
+                tema.getEstudantes().forEach(e -> {
+                    messagingTemplate.convertAndSend(
+                            "/topic/solicitacoes/" + e.getId(),
+                            dto
+                    );
+                });
+            } else {
+                messagingTemplate.convertAndSend(
+                        "/topic/solicitacoes/" + solicitacao.getProfessor().getId(),
+                        dto
+                );
+            }
+
+            return dto;
         }
     }
 
@@ -262,11 +313,18 @@ public class SolitacaoService {
 
         tema.getEstudantes().forEach(estudante -> notificacaoService.criarNotificacao(solicitacao.getProfessor(), estudante, "Sua orientação foi concluída pelo professor(a) ", solicitacao, StatusSolicitacao.CONCLUIDA.toString()));
 
-//        estudantes.forEach(estudante -> notificacaoService.criarNotificacao(professor, estudante, "Sua orientação foi concluída pelo professor(a) ", solicitacao, StatusSolicitacao.CONCLUIDA.toString()));
-
         maximoOrientacoesAtingida(usuario.getId(), solicitacao);
 
-        return detalharSolicitacao(solicitacaoId);
+        SolicitacaoListagemDTO dto = detalharSolicitacao(solicitacaoId);
+
+        tema.getEstudantes().forEach(e -> {
+            messagingTemplate.convertAndSend(
+                    "/topic/solicitacoes/" + e.getId(),
+                    dto
+            );
+        });
+
+        return dto;
     }
 
     public SolicitacaoListagemDTO solicitarTema(Long estudanteId, Long temaId) {
@@ -289,7 +347,14 @@ public class SolitacaoService {
 
         notificacaoService.criarNotificacao(estudante, professor, mensagem, solicitacao, TipoNotificacao.TEMA.toString());
 
-        return detalharSolicitacao(solicitacao.getId());
+        SolicitacaoListagemDTO dto = detalharSolicitacao(solicitacao.getId());
+
+        messagingTemplate.convertAndSend(
+                "/topic/solicitacoes/" + professor.getId(),
+                dto
+        );
+
+        return dto;
     }
 
     public Page<SolicitacaoListagemDTO> buscarSolicitacoesComFiltros(Usuario usuario, FiltroSolicitacao filtro, Pageable pageable) {

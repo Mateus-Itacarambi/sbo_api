@@ -7,10 +7,12 @@ import ifb.sbo.api.domain.usuario.Usuario;
 import ifb.sbo.api.domain.usuario.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/notificacoes")
@@ -23,6 +25,9 @@ public class NotificacaoController {
 
     @Autowired
     private NotificacaoRepository notificacaoRepository;
+
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
 
     @GetMapping("/nao-lidas")
     public ResponseEntity<List<NotificacaoDTO>> listarNaoLidas(@AuthenticationPrincipal Usuario usuario) {
