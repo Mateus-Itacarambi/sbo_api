@@ -112,6 +112,10 @@ public class TemaService {
     public TemaListagemDTO atualizarTema(Long temaId, Long usuarioId, TemaAtualizaDTO dados) {
         var tema = buscarTema(temaId);
 
+        if (tema.getStatus().equals(StatusTema.CONCLUIDO)){
+            throw new ConflitoException("Este tema já foi concluído.");
+        }
+
         usuarioService.verificarUsuarioTema(usuarioId, tema);
 
 
@@ -155,6 +159,10 @@ public class TemaService {
     public void removerEstudanteDoTema(Long temaId, Long usuarioId, String matricula) {
         Tema tema = buscarTema(temaId);
 
+        if (tema.getStatus().equals(StatusTema.CONCLUIDO)){
+            throw new ConflitoException("Este tema já foi concluído.");
+        }
+
         usuarioService.verificarUsuarioTema(usuarioId, tema);
 
         Estudante estudante = estudanteService.buscarEstudanteMatricula(matricula);
@@ -182,7 +190,7 @@ public class TemaService {
         var usuario = usuarioService.buscarUsuario(usuarioId);
 
         if (tema.getStatus().equals(StatusTema.CONCLUIDO)){
-            throw new ConflitoException("Este tema está concluído.");
+            throw new ConflitoException("Este tema já foi concluído.");
         }
 
         usuarioService.verificarUsuarioTema(usuarioId, tema);

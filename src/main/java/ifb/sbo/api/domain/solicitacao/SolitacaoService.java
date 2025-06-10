@@ -228,8 +228,8 @@ public class SolitacaoService {
 
             if (usuario instanceof Estudante estudante) {
                 if (solicitacao.getTipo() == TipoSolicitacao.TEMA) {
-                    var mensagem = " cancelou a solicitação do tema “" + solicitacao.getTema() + "“.";
-                    notificacaoService.criarNotificacao(estudante, solicitacao.getProfessor(), mensagem, solicitacao, StatusSolicitacao.CONCLUIDA.toString());
+                    var mensagem = " cancelou a solicitação do tema “" + solicitacao.getTema().getTitulo() + "“.";
+                    notificacaoService.criarNotificacao(estudante, solicitacao.getProfessor(), mensagem, solicitacao, TipoSolicitacao.TEMA.toString());
 
                     tema.getEstudantes().stream()
                             .filter(e -> !e.getId().equals(estudante.getId()))
@@ -239,7 +239,7 @@ public class SolitacaoService {
                                             outroEstudante,
                                             mensagem,
                                             solicitacao,
-                                            StatusSolicitacao.CANCELADA.toString()
+                                            TipoSolicitacao.TEMA.toString()
                                     )
                             );
                 } else {
@@ -257,7 +257,7 @@ public class SolitacaoService {
                 }
             } else if (usuario instanceof Professor professor) {
                 if (solicitacao.getTipo() == TipoSolicitacao.TEMA) {
-                    var mensagem = " cancelou a solicitação do tema “" + solicitacao.getTema() + "“.";
+                    var mensagem = " cancelou a solicitação do tema “" + solicitacao.getTema().getTitulo() + "“.";
                     tema.getEstudantes()
                             .forEach(estudante ->
                                     notificacaoService.criarNotificacao(
@@ -265,7 +265,7 @@ public class SolitacaoService {
                                             estudante,
                                             mensagem,
                                             solicitacao,
-                                            StatusSolicitacao.CANCELADA.toString()
+                                            TipoSolicitacao.TEMA.toString()
                                     )
                             );
                 } else {
@@ -327,7 +327,7 @@ public class SolitacaoService {
         solicitacao.setDataAtualizacao(LocalDateTime.now(clock));
         solicitacaoRepository.save(solicitacao);
 
-        tema.getEstudantes().forEach(estudante -> notificacaoService.criarNotificacao(solicitacao.getProfessor(), estudante, "Sua orientação foi concluída pelo professor(a) ", solicitacao, StatusSolicitacao.CONCLUIDA.toString()));
+        tema.getEstudantes().forEach(estudante -> notificacaoService.criarNotificacao(solicitacao.getProfessor(), estudante, "Sua orientação foi concluída pelo(a) professor(a) ", solicitacao, StatusSolicitacao.CONCLUIDA.toString()));
 
         maximoOrientacoesAtingida(usuario.getId(), solicitacao);
 

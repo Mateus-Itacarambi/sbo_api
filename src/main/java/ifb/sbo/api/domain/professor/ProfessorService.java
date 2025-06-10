@@ -12,6 +12,7 @@ import ifb.sbo.api.domain.formacao.*;
 import ifb.sbo.api.domain.solicitacao.Solicitacao;
 import ifb.sbo.api.domain.solicitacao.SolicitacaoRepository;
 import ifb.sbo.api.domain.solicitacao.StatusSolicitacao;
+import ifb.sbo.api.domain.solicitacao.TipoSolicitacao;
 import ifb.sbo.api.domain.tema.TemaDetalhaDTO;
 import ifb.sbo.api.domain.usuario.TipoUsuario;
 import ifb.sbo.api.domain.usuario.Usuario;
@@ -330,8 +331,8 @@ public class ProfessorService {
 
         return professorRepository.findAll(spec, pageable)
                 .map(professor -> {
-                    var solicitacao = solicitacaoRepository.findByEstudanteIdAndProfessorIdAndStatus(
-                            estudanteId, professor.getId(), StatusSolicitacao.PENDENTE
+                    var solicitacao = solicitacaoRepository.findByEstudanteIdAndProfessorIdAndTipoAndStatus(
+                            estudanteId, professor.getId(), TipoSolicitacao.ORIENTACAO, StatusSolicitacao.PENDENTE
                     );
 
                     return mapearParaListaDTO(professor, solicitacao.isPresent(), solicitacao.map(Solicitacao::getId).orElse(null));
