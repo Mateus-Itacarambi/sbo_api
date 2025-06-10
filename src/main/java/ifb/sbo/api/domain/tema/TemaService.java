@@ -3,6 +3,10 @@ package ifb.sbo.api.domain.tema;
 
 import ifb.sbo.api.domain.estudante.*;
 import ifb.sbo.api.domain.professor.*;
+import ifb.sbo.api.domain.solicitacao.Solicitacao;
+import ifb.sbo.api.domain.solicitacao.SolicitacaoRepository;
+import ifb.sbo.api.domain.solicitacao.StatusSolicitacao;
+import ifb.sbo.api.domain.usuario.Usuario;
 import ifb.sbo.api.domain.usuario.UsuarioService;
 import ifb.sbo.api.infra.exception.ConflitoException;
 import jakarta.persistence.EntityNotFoundException;
@@ -29,17 +33,23 @@ public class TemaService {
     @Autowired
     private ProfessorRepository professorRepository;
 
-    private final EstudanteService estudanteService;
+    @Autowired
+    private SolicitacaoRepository solicitacaoRepository;
 
-    private final ProfessorService professorService;
+    @Autowired
+    private EstudanteService estudanteService;
 
-    private final UsuarioService usuarioService;
+    @Autowired
+    private ProfessorService professorService;
 
-    public TemaService(EstudanteService estudanteService, ProfessorService professorService, UsuarioService usuarioService) {
-        this.estudanteService = estudanteService;
-        this.professorService = professorService;
-        this.usuarioService = usuarioService;
-    }
+    @Autowired
+    private UsuarioService usuarioService;
+
+//    public TemaService(EstudanteService estudanteService, ProfessorService professorService, UsuarioService usuarioService) {
+//        this.estudanteService = estudanteService;
+//        this.professorService = professorService;
+//        this.usuarioService = usuarioService;
+//    }
 
     public EstudanteListagemDTO criarTemaEstudante(Long estudanteId, TemaCadastroDTO dados) {
         buscarTemaTitulo(dados.titulo());
@@ -74,15 +84,23 @@ public class TemaService {
         return professorService.detalharProfessor(professorId);
     }
 
-//    public Page<TemaListagemDTO> listarTemasPaginados(@PageableDefault(size = 20, sort = {"nome"}) Pageable paginacao) {
-//        return temaRepository.findAllByStatusDisponivel(paginacao)
-//                .map(this::mapearParaDTO);
-//    }
-
-    public Page<TemaListagemDTO> listarTemasComFiltros(FiltroTema filtro, Pageable pageable) {
+    public Page<TemaBuscaDTO> listarTemasComFiltros(FiltroTema filtro, Pageable pageable, Usuario usuario) {
         Specification<Tema> spec = TemaSpecification.comFiltros(filtro);
+
+        Long estudanteId;
+
+        if (usuario instanceof Estudante estudante) {
+            estudanteId = estudante.getId();
+        } else {
+            estudanteId = null;
+        }
+
         return temaRepository.findAll(spec, pageable)
-                .map(this::mapearParaDTO);
+                .map(tema -> {
+                    var solicitacao = solicitacaoRepository.findByEstudanteIdAndTemaIdAndStatus(estudanteId, tema.getId(), StatusSolicitacao.PENDENTE);
+
+                    return mapearParaListaDTO(tema, solicitacao.isPresent(), solicitacao.map(Solicitacao::getId).orElse(null));
+                });
     }
 
     public Page<TemaListagemDTO> listarTemasPaginadosPorProfessor(Long professorId, @PageableDefault(size = 20, sort = {"nome"}) Pageable paginacao) {
@@ -202,6 +220,21 @@ public class TemaService {
                         tema.getProfessor().getNome()
                 ) : null,
                 estudantesDTO);
+    }
+
+    private TemaBuscaDTO mapearParaListaDTO(Tema tema, Boolean solicitacaoPendente, Long idSolicitacao) {
+        return new TemaBuscaDTO(
+                tema.getId(),
+                tema.getTitulo(),
+                tema.getDescricao(),
+                tema.getPalavrasChave(),
+                tema.getStatus().getDescricao(),
+                tema.getProfessor() != null ? new ProfessorDetalhaDTO(
+                        tema.getProfessor().getId(),
+                        tema.getProfessor().getNome()
+                ) : null,
+                solicitacaoPendente,
+                idSolicitacao);
     }
 
     public Tema buscarTema(Long temaId) {

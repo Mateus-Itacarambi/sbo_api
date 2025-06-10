@@ -151,10 +151,21 @@ public class SolitacaoService {
         solicitacao.setDataAtualizacao(LocalDateTime.now(clock));
         solicitacaoRepository.save(solicitacao);
 
-        List<Solicitacao> solicitacoes = solicitacaoRepository.findAllByTemaAndStatus(solicitacao.getTema(), StatusSolicitacao.PENDENTE);
+        List<Solicitacao> solicitacoes = solicitacaoRepository.findAllByEstudanteIdAndStatus(solicitacao.getEstudante().getId(), StatusSolicitacao.PENDENTE);
 
-        solicitacoes.forEach(s -> s.setStatus(StatusSolicitacao.CANCELADA));
-        solicitacaoRepository.saveAll(solicitacoes);
+        solicitacoes.stream()
+                .filter(s -> !s.getId().equals(solicitacaoId))
+                .forEach(s -> {
+                    solicitacaoRepository.delete(s);
+                    messagingTemplate.convertAndSend(
+                            "/topic/solicitacoes/" + s.getProfessor().getId(),
+                            Map.of("removerSolicitacaoId", s.getId())
+                    );
+                    messagingTemplate.convertAndSend(
+                            "/topic/solicitacoes/" + s.getEstudante().getId(),
+                            Map.of("removerSolicitacaoId", s.getId())
+                    );
+        });
 
         maximoOrientacoesAtingida(usuario.getId(), solicitacao);
 
@@ -166,6 +177,11 @@ public class SolitacaoService {
                     dto
             );
         });
+
+        messagingTemplate.convertAndSend(
+                "/topic/solicitacoes/" + solicitacao.getEstudante().getId(),
+                dto
+        );
 
         return dto;
     }
@@ -205,7 +221,7 @@ public class SolitacaoService {
                 tema.setProfessor(professor);
 
                 List<Estudante> estudantes = tema.getEstudantes();
-                estudantes.forEach(e -> temaService.removerEstudanteDoTema(tema.getId(), professor.getId(), e.getMatricula()));
+                estudantes.forEach(e -> e.setTema(null));
             }
 
             tema.setDataAtualizacao(LocalDate.now());
@@ -329,14 +345,16 @@ public class SolitacaoService {
 
     public SolicitacaoListagemDTO solicitarTema(Long estudanteId, Long temaId) {
         var estudante = estudanteService.buscarEstudante(estudanteId);
+
+        estudanteTemSolicitacaoAprovada(estudanteId);
         estudanteService.verificarTemaEstudante(estudanteId);
 
         var tema = temaService.buscarTemaDisponivel(temaId);
 
         var professor = professorService.buscarProfessor(tema.getProfessor().getId());
 
-        estudanteTemSolicitacaoAprovada(estudanteId);
-        existeSolicitacaoTemaProfessorAprovada(tema.getId(), professor.getId());
+        existeSolicitacaoTemaProfessorPendente(temaId, professor.getId());
+        existeSolicitacaoTema(tema.getId());
 
         var solicitacao = new Solicitacao(tema, professor, estudante);
         solicitacao.setTipo(TipoSolicitacao.TEMA);
@@ -400,9 +418,9 @@ public class SolitacaoService {
         }
     }
 
-    public void existeSolicitacaoTemaProfessorAprovada(Long temaId, Long professorId) {
-        if (solicitacaoRepository.countByIdTemaAndIdProfessor(temaId, professorId, StatusSolicitacao.APROVADA) != 0) {
-            throw new ConflitoException("Já existe uma solicitação aprovada para esse tema!");
+    public void existeSolicitacaoTemaProfessorPendente(Long temaId, Long professorId) {
+        if (solicitacaoRepository.countByIdTemaAndIdProfessor(temaId, professorId, StatusSolicitacao.PENDENTE) != 0) {
+            throw new ConflitoException("Já existe uma solicitação para esse tema!");
         }
     }
 

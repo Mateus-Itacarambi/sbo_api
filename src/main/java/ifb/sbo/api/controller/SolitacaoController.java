@@ -46,9 +46,9 @@ public class SolitacaoController {
         return ResponseEntity.created(uri).body(solicitacao);
     }
 
-    @PostMapping("/solicitarTema/{estudanteId}/{temaId}")
-    public ResponseEntity solicitarTema(@PathVariable Long estudanteId, @PathVariable Long temaId, UriComponentsBuilder uriBuilder) {
-        var solicitacao = solicitacaoService.solicitarTema(estudanteId, temaId);
+    @PostMapping("/solicitarTema/{temaId}")
+    public ResponseEntity solicitarTema(@AuthenticationPrincipal Usuario usuario, @PathVariable Long temaId, UriComponentsBuilder uriBuilder) {
+        var solicitacao = solicitacaoService.solicitarTema(usuario.getId(), temaId);
 
         var uri = uriBuilder.path("/solicitacoes/{id}").buildAndExpand(solicitacao.id()).toUri();
 

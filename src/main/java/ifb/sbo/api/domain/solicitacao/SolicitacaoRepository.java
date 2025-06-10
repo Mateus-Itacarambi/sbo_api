@@ -45,4 +45,8 @@ public interface SolicitacaoRepository extends JpaRepository<Solicitacao, Long>,
     Page<Solicitacao> findAll(@Nullable Specification<Solicitacao> spec, Pageable pageable);
 
     Optional<Solicitacao> findByEstudanteIdAndProfessorIdAndStatus(Long estudanteId, Long id, StatusSolicitacao statusSolicitacao);
+
+    Optional<Solicitacao> findByEstudanteIdAndTemaIdAndStatus(Long estudanteId, Long id, StatusSolicitacao statusSolicitacao);
+
+    List<Solicitacao> findAllByEstudanteIdAndStatus(Long estudanteId, StatusSolicitacao statusSolicitacao);
 }
