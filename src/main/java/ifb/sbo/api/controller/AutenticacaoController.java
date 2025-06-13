@@ -8,6 +8,7 @@ import ifb.sbo.api.domain.usuario.*;
 import ifb.sbo.api.infra.exception.ConflitoException;
 import ifb.sbo.api.infra.security.DadosTokenJWT;
 import ifb.sbo.api.infra.security.TokenService;
+import ifb.sbo.api.infra.service.EmailService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +45,7 @@ public class AutenticacaoController {
     private ProfessorService professorService;
 
     @Autowired
-    private AutenticacaoService autenticacaoService;
+    private EmailService emailService;
 
     @PostMapping("/login")
     public ResponseEntity login(@RequestBody @Valid DadosAutenticacao dados, HttpServletResponse response) {
@@ -132,14 +133,25 @@ public class AutenticacaoController {
         }
     }
 
-    @GetMapping("/teste-usuario")
-    public ResponseEntity<?> testeUsuario(@AuthenticationPrincipal Usuario usuario) {
-        if (usuario == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuário não autenticado.");
-        }
-
-        return ResponseEntity.ok("Usuário logado: " + usuario.getNome() + " (ID: " + usuario.getId() + ")");
+    @PostMapping("/esqueceu-senha")
+    public ResponseEntity<?> solicitarRedefinicao(@RequestBody @Valid EmailDTO dto) {
+        emailService.enviarEmailRedefinicaoSenha(dto.email());
+        return ResponseEntity.ok().build();
     }
 
+    @PostMapping("/redefinir-senha")
+    public ResponseEntity<?> redefinirSenha(@RequestBody RedefinirSenhaDTO dto) {
+        usuarioService.redefinirSenha(dto.token(), dto.novaSenha());
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/alterar-senha")
+    public ResponseEntity<?> alterarSenha(
+            @RequestBody AlterarSenhaDTO dto,
+            @AuthenticationPrincipal Usuario usuario
+    ) {
+        usuarioService.alterarSenha(usuario, dto.senhaAtual(), dto.novaSenha());
+        return ResponseEntity.ok().build();
+    }
 
 }

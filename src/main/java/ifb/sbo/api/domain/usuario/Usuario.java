@@ -11,6 +11,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -41,6 +42,10 @@ public class Usuario implements UserDetails {
     protected Boolean ativo;
     @Column(name = "cadastro_completo")
     protected Boolean cadastroCompleto;
+    @Column(name = "token_recuperacao")
+    private String tokenRecuperacao;
+    @Column(name = "data_expiracao_token")
+    private LocalDateTime dataExpiracaoToken;
 
     public Usuario(String nome, LocalDate dataNascimento, String genero, String email, String senha) {
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();

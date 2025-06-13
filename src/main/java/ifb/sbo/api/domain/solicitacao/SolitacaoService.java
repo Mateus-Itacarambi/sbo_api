@@ -68,6 +68,7 @@ public class SolitacaoService {
 
         var professor = professorService.buscarProfessor(professorId);
 
+        professorEstaDisponivel(professor);
         existeSolicitacaoTemaProfessor(tema.getId(), professorId);
         existeSolicitacaoTema(tema.getId());
 
@@ -353,6 +354,7 @@ public class SolitacaoService {
 
         var professor = professorService.buscarProfessor(tema.getProfessor().getId());
 
+        professorEstaDisponivel(professor);
         existeSolicitacaoTemaProfessorPendente(temaId, professor.getId());
         existeSolicitacaoTema(tema.getId());
 
@@ -427,6 +429,12 @@ public class SolitacaoService {
     private void maximoOrientacoes(Professor professor) {
         if (solicitacaoRepository.countByStatusAndProfessor(StatusSolicitacao.APROVADA, professor) >= 6) {
             throw new ConflitoException("Número máximo de orientações alcançada!");
+        }
+    }
+
+    private void professorEstaDisponivel(Professor professor) {
+        if (professor.getDisponibilidade() == Disponibilidade.INDISPONIVEL) {
+            throw new ConflitoException("Professor(a) não está mais disponível.");
         }
     }
 

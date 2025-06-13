@@ -20,7 +20,7 @@ import ifb.sbo.api.domain.usuario.UsuarioRepository;
 import ifb.sbo.api.domain.usuario.UsuarioService;
 import ifb.sbo.api.infra.exception.ConflitoException;
 import ifb.sbo.api.infra.service.AuthService;
-import ifb.sbo.api.infra.service.EnviarEmail;
+import ifb.sbo.api.infra.service.EmailService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
@@ -28,7 +28,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -68,7 +67,7 @@ public class ProfessorService {
     private AuthService authService;
 
     @Autowired
-    private EnviarEmail emailService;
+    private EmailService emailService;
 
     @Autowired
     private SolicitacaoRepository solicitacaoRepository;

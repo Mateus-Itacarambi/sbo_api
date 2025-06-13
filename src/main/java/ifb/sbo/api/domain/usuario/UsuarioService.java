@@ -8,11 +8,15 @@ import ifb.sbo.api.domain.tema.*;
 import ifb.sbo.api.infra.exception.ConflitoException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Service
 public class UsuarioService {
@@ -33,6 +37,32 @@ public class UsuarioService {
         usuarioRepository.save(admin);
 
         return mapearParaDTO(admin);
+    }
+
+    public void redefinirSenha(String token, String novaSenha) {
+        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
+        Usuario usuario = usuarioRepository.findByTokenRecuperacao(token)
+                .orElseThrow(() -> new ConflitoException("Token inválido"));
+
+        if (usuario.getDataExpiracaoToken().isBefore(LocalDateTime.now())) {
+            throw new ConflitoException("Token expirado");
+        }
+
+        usuario.setSenha(passwordEncoder.encode(novaSenha));
+        usuario.setTokenRecuperacao(null);
+        usuario.setDataExpiracaoToken(null);
+        usuarioRepository.save(usuario);
+    }
+
+    public void alterarSenha(Usuario usuario, String senhaAtual, String novaSenha) {
+        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        if (!passwordEncoder.matches(senhaAtual, usuario.getSenha())) {
+            throw new ConflitoException("Senha atual incorreta");
+        }
+
+        usuario.setSenha(passwordEncoder.encode(novaSenha));
+        usuarioRepository.save(usuario);
     }
 
     public UsuarioListagemDTO detalharUsuario(Long usuarioId) {

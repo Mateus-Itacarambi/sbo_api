@@ -21,4 +21,6 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     int countByEmail(String email);
 
     boolean existsByEmail(String email);
+
+    Optional<Usuario> findByTokenRecuperacao(String token);
 }
